@@ -197,7 +197,14 @@ const Workspace = () => {
         {/* Chord Grid Area */}
         <div className="flex-1 overflow-auto">
           {!showSoloAnalysis ? (
-            <ChordGrid />
+            <div className="flex flex-col h-full">
+              <div className="flex-1 overflow-auto">
+                <ChordGrid />
+              </div>
+              <div className="h-52 border-t border-gray-800 bg-gray-900">
+                <GuitarFretboard notes={displayedNotes} />
+              </div>
+            </div>
           ) : (
             <SoloAnalysis 
               currentChord={currentChord} 
@@ -243,62 +250,64 @@ const Workspace = () => {
           </Button>
         </div>
         
-        {/* Bottom Instrument Panel */}
-        <div className="h-52 border-t border-gray-800 bg-gray-900">
-          <Tabs defaultValue="guitar" className="w-full h-full">
-            <div className="flex border-b border-gray-800">
-              <TabsList className="bg-gray-900 h-12 px-4">
-                <TabsTrigger 
-                  value="sheet" 
-                  className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                >
-                  Staff Notation
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="keyboard" 
-                  className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                >
-                  Keyboard
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="guitar" 
-                  className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                >
-                  Guitar
-                </TabsTrigger>
-              </TabsList>
-              <div className="ml-auto flex items-center pr-4">
-                <Badge className="mr-3 bg-sensei-accent/20 text-sensei-accent border border-sensei-accent/30">
-                  {currentChord}
-                </Badge>
-                <Button 
-                  onClick={handleChordToggle}
-                  variant="outline" 
-                  size="sm"
-                  className="bg-transparent border-gray-700 hover:bg-gray-800"
-                >
-                  Show {currentChord === "C" ? "E7" : "C"} Voicing
-                </Button>
+        {/* Bottom Instrument Panel - Only show when Solo Analysis is active */}
+        {showSoloAnalysis && (
+          <div className="h-52 border-t border-gray-800 bg-gray-900">
+            <Tabs defaultValue="guitar" className="w-full h-full">
+              <div className="flex border-b border-gray-800">
+                <TabsList className="bg-gray-900 h-12 px-4">
+                  <TabsTrigger 
+                    value="sheet" 
+                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
+                  >
+                    Staff Notation
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="keyboard" 
+                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
+                  >
+                    Keyboard
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="guitar" 
+                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
+                  >
+                    Guitar
+                  </TabsTrigger>
+                </TabsList>
+                <div className="ml-auto flex items-center pr-4">
+                  <Badge className="mr-3 bg-sensei-accent/20 text-sensei-accent border border-sensei-accent/30">
+                    {currentChord}
+                  </Badge>
+                  <Button 
+                    onClick={handleChordToggle}
+                    variant="outline" 
+                    size="sm"
+                    className="bg-transparent border-gray-700 hover:bg-gray-800"
+                  >
+                    Show {currentChord === "C" ? "E7" : "C"} Voicing
+                  </Button>
+                </div>
               </div>
-            </div>
-            
-            <TabsContent value="sheet" className="h-full">
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <p>Staff notation will be displayed here</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="keyboard" className="h-full">
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <p>Keyboard visualization will be displayed here</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="guitar" className="h-full">
-              <GuitarFretboard notes={displayedNotes} />
-            </TabsContent>
-          </Tabs>
-        </div>
+              
+              <TabsContent value="sheet" className="h-full">
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <p>Staff notation will be displayed here</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="keyboard" className="h-full">
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <p>Keyboard visualization will be displayed here</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="guitar" className="h-full">
+                <GuitarFretboard notes={displayedNotes} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

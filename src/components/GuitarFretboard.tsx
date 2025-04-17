@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export interface FretboardNote {
-  string: number; // 1-6 (6 is low E)
+  string: number; // 1-6 (1 is high E, 6 is low E)
   fret: number;   // 0-15 (0 is open string)
   finger?: number; // 1-4 representing fingers (1=index, 4=pinky)
   isRoot?: boolean;
@@ -17,8 +17,8 @@ interface GuitarFretboardProps {
 const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
   const [hoveredPosition, setHoveredPosition] = useState<{ string: number; fret: number } | null>(null);
   
-  // Guitar tuning (standard)
-  const strings = ["E", "B", "G", "D", "A", "E"];
+  // Guitar tuning (standard) - from low to high
+  const strings = ["E", "A", "D", "G", "B", "E"];
   
   // Number of frets to display
   const fretCount = 15;
@@ -42,14 +42,16 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
   const handleClick = (stringIndex: number, fret: number) => {
     if (onClick) {
       // Convert to 1-indexed string numbers (1=high E, 6=low E)
-      onClick(strings.length - stringIndex, fret);
+      // Strings are rendered in reverse order (low E at top)
+      onClick(6 - stringIndex, fret);
     }
   };
   
   // Get note information at a specific position
   const getNoteAtPosition = (stringIndex: number, fret: number) => {
     // Convert to 1-indexed string numbers (1=high E, 6=low E)
-    const stringNumber = strings.length - stringIndex;
+    // Strings are rendered in reverse order (low E at top)
+    const stringNumber = 6 - stringIndex;
     return notes.find(note => note.string === stringNumber && note.fret === fret);
   };
   

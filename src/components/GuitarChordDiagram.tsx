@@ -57,7 +57,8 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
         
         {/* String status at nut (open, muted) */}
         {Array.from({ length: strings }, (_, i) => {
-          const stringNum = i + 1;
+          // 문자열 번호를 반전시킴 (6부터 1까지)
+          const stringNum = strings - i;
           const pos = positions.find(p => p.string === stringNum);
           
           // Skip if the position is fretted (not open or muted)
@@ -86,7 +87,8 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
         
         {/* Finger positions */}
         {positions.filter(p => p.fret > 0).map((pos, i) => {
-          const stringIdx = pos.string - 1;
+          // 문자열 인덱스를 반전시켜 좌우 방향을 올바르게 표시
+          const stringIdx = strings - pos.string;
           const relFret = pos.fret - startFret;
           
           // Skip if the fret is outside our display range
