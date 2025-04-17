@@ -1,24 +1,33 @@
 import { useState } from "react";
 
 export interface FretboardNote {
-  string: number; // 1-6 (1 is high E, 6 is low E)
+  string: number; // 1-6 (6 is low E)
   fret: number;   // 0-15 (0 is open string)
   finger?: number; // 1-4 representing fingers (1=index, 4=pinky)
   isRoot?: boolean;
+  isChordTone?: boolean; // Added to identify chord tones
+  isScaleNote?: boolean; // Added to identify scale notes
   isHighlighted?: boolean;
   duration?: number; // For animated solo playback
 }
 
-interface GuitarFretboardProps {
+interface GuitarFretboardWithScaleDisplayProps {
   notes: FretboardNote[];
   onClick?: (string: number, fret: number) => void;
+  recommendedScale?: string; // Name of the recommended scale
+  recommendedChord?: string; // Name of the recommended chord
 }
 
-const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
+const GuitarFretboardWithScaleDisplay = ({ 
+  notes = [], 
+  onClick,
+  recommendedScale = "",
+  recommendedChord = ""
+}: GuitarFretboardWithScaleDisplayProps) => {
   const [hoveredPosition, setHoveredPosition] = useState<{ string: number; fret: number } | null>(null);
   
-  // Guitar tuning (standard) - from low to high
-  const strings = ["E", "A", "D", "G", "B", "E"];
+  // Guitar tuning (standard)
+  const strings = ["E", "B", "G", "D", "A", "E"];
   
   // Number of frets to display
   const fretCount = 15;
@@ -42,16 +51,14 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
   const handleClick = (stringIndex: number, fret: number) => {
     if (onClick) {
       // Convert to 1-indexed string numbers (1=high E, 6=low E)
-      // Strings are rendered in reverse order (low E at top)
-      onClick(6 - stringIndex, fret);
+      onClick(strings.length - stringIndex, fret);
     }
   };
   
   // Get note information at a specific position
   const getNoteAtPosition = (stringIndex: number, fret: number) => {
     // Convert to 1-indexed string numbers (1=high E, 6=low E)
-    // Strings are rendered in reverse order (low E at top)
-    const stringNumber = 6 - stringIndex;
+    const stringNumber = strings.length - stringIndex;
     return notes.find(note => note.string === stringNumber && note.fret === fret);
   };
   
@@ -59,6 +66,8 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
   const getMarkerColor = (note: FretboardNote | undefined) => {
     if (!note) return "bg-gray-700";
     if (note.isRoot) return "bg-sensei-accent";
+    if (note.isChordTone) return "bg-orange-400"; // Chord tones in orange
+    if (note.isScaleNote) return "bg-green-400"; // Scale notes in green
     if (note.isHighlighted) return "bg-blue-500";
     return "bg-gray-300";
   };
@@ -67,14 +76,29 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
     <div className="w-full h-full bg-gray-900 overflow-auto p-4">
       <div className="flex items-center mb-4">
         <h3 className="text-lg font-medium">Guitar</h3>
+        
+        {/* Display recommended scale and chord */}
+        <div className="ml-4 flex flex-col">
+          {recommendedScale && (
+            <span className="text-sm text-green-400">Scale: {recommendedScale}</span>
+          )}
+          {recommendedChord && (
+            <span className="text-sm text-orange-400">Chord: {recommendedChord}</span>
+          )}
+        </div>
+        
         <div className="ml-auto flex gap-2 text-xs text-gray-400">
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-sensei-accent mr-1"></div>
             <span>Root</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-gray-300 mr-1"></div>
+            <div className="w-3 h-3 rounded-full bg-orange-400 mr-1"></div>
             <span>Chord Tone</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-green-400 mr-1"></div>
+            <span>Scale Note</span>
           </div>
         </div>
       </div>
@@ -194,4 +218,4 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
   );
 };
 
-export default GuitarFretboard;
+export default GuitarFretboardWithScaleDisplay; 
