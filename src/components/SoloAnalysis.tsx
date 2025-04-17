@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, ChevronRight, Music, Waveform } from "lucide-react";
+import { BarChart, ChevronRight, Music, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ScaleRecommendation {
@@ -25,7 +24,6 @@ const SoloAnalysis = ({
 }: SoloAnalysisProps) => {
   const [activeTab, setActiveTab] = useState<"feedback" | "scales" | "licks">("feedback");
   
-  // Format time
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -33,7 +31,6 @@ const SoloAnalysis = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
   
-  // Mock lick recommendations
   const recommendedLicks = [
     {
       name: "BBKing 벤딩 스타일",
@@ -76,7 +73,7 @@ const SoloAnalysis = ({
             activeTab === "feedback" ? "bg-sensei-accent text-white" : "bg-gray-800 text-gray-200"
           }`}
         >
-          <Waveform size={16} />
+          <Radio size={16} />
           연주 피드백
         </button>
         <button
@@ -103,7 +100,7 @@ const SoloAnalysis = ({
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <Waveform className="mr-2 h-5 w-5 text-sensei-accent" />
+              <Radio className="mr-2 h-5 w-5 text-sensei-accent" />
               실시간 피드백
             </CardTitle>
           </CardHeader>
