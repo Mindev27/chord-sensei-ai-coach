@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, ChevronRight, Music, Radio } from "lucide-react";
@@ -22,8 +23,6 @@ const SoloAnalysis = ({
   scaleRecommendations,
   playbackTime 
 }: SoloAnalysisProps) => {
-  const [activeTab, setActiveTab] = useState<"feedback" | "scales" | "licks">("feedback");
-  
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -66,37 +65,8 @@ const SoloAnalysis = ({
         </div>
       </div>
       
-      <div className="flex space-x-2 mb-4">
-        <button
-          onClick={() => setActiveTab("feedback")}
-          className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-            activeTab === "feedback" ? "bg-sensei-accent text-white" : "bg-gray-800 text-gray-200"
-          }`}
-        >
-          <Radio size={16} />
-          연주 피드백
-        </button>
-        <button
-          onClick={() => setActiveTab("scales")}
-          className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-            activeTab === "scales" ? "bg-sensei-accent text-white" : "bg-gray-800 text-gray-200"
-          }`}
-        >
-          <Music size={16} />
-          추천 스케일
-        </button>
-        <button
-          onClick={() => setActiveTab("licks")}
-          className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-            activeTab === "licks" ? "bg-sensei-accent text-white" : "bg-gray-800 text-gray-200"
-          }`}
-        >
-          <BarChart size={16} />
-          추천 릭
-        </button>
-      </div>
-      
-      {activeTab === "feedback" && (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 연주 피드백 */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
@@ -128,9 +98,8 @@ const SoloAnalysis = ({
             </div>
           </CardContent>
         </Card>
-      )}
-      
-      {activeTab === "scales" && (
+        
+        {/* 추천 스케일 */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
@@ -167,22 +136,11 @@ const SoloAnalysis = ({
                   </div>
                 </div>
               ))}
-              
-              <div className="bg-gray-700/50 p-3 rounded-md">
-                <h3 className="font-medium flex items-center">
-                  <span>스케일 탐색기</span>
-                  <Badge className="ml-2 bg-gray-600">Pro</Badge>
-                </h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  모든 코드와 호환되는 스케일을 탐색하고, 도미넌트, 디미니쉬드, 크로매틱 접근법 등을 발견하세요.
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>
-      )}
-      
-      {activeTab === "licks" && (
+        
+        {/* 추천 릭 */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
@@ -211,16 +169,10 @@ const SoloAnalysis = ({
                   </button>
                 </div>
               ))}
-              
-              <div className="mt-3 text-center py-2">
-                <p className="text-sm text-gray-400">
-                  현재 코드 진행에 맞는 릭을 더 보려면 <span className="text-sensei-accent underline cursor-pointer">프로 버전으로 업그레이드</span>하세요.
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 };
