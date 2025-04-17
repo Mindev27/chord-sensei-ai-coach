@@ -214,6 +214,7 @@ const Workspace = () => {
             <h1 className="text-xl font-bold">Don't Look Back in Anger</h1>
             <p className="text-gray-400 text-sm">Oasis - 4:48</p>
           </div>
+
           
           <div className="ml-auto flex gap-2">
             <Button variant="outline" size="sm" className="flex items-center gap-1 bg-transparent border-gray-700 hover:bg-gray-800">
@@ -230,32 +231,9 @@ const Workspace = () => {
             </Button>
           </div>
         </div>
-        
-        {/* Chord Grid Area */}
-        <div className="flex-1 overflow-auto">
-          {!showSoloAnalysis ? (
-            <div className="flex flex-col h-full">
-              <div className="flex-1 overflow-auto">
-                <ChordGrid />
-              </div>
-              <div className="h-52 border-t border-gray-800 bg-gray-900">
-                <GuitarFretboard notes={displayedNotes} />
-              </div>
-            </div>
-          ) : (
-            <SoloAnalysis 
-              currentChord={currentChord} 
-              feedback={soloFeedback[feedbackIndex]} 
-              scaleRecommendations={scaleRecommendations}
-              playbackTime={playbackTime}
-              previousChord={getPreviousChord()}
-              nextChord={getNextChord()}
-            />
-          )}
-        </div>
-        
-        {/* Toggle button for chord grid / solo analysis */}
-        <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
+
+                {/* Toggle button for chord grid / solo analysis */}
+                <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
           <div className="flex gap-2">
             <Button 
               variant={showSoloAnalysis ? "default" : "outline"}
@@ -287,64 +265,28 @@ const Workspace = () => {
           </Button>
         </div>
         
-        {/* Bottom Instrument Panel - Only show when Solo Analysis is active */}
-        {showSoloAnalysis && (
-          <div className="h-52 border-t border-gray-800 bg-gray-900">
-            <Tabs defaultValue="guitar" className="w-full h-full">
-              <div className="flex border-b border-gray-800">
-                <TabsList className="bg-gray-900 h-12 px-4">
-                  <TabsTrigger 
-                    value="sheet" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Staff Notation
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="keyboard" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Keyboard
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="guitar" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Guitar
-                  </TabsTrigger>
-                </TabsList>
-                <div className="ml-auto flex items-center pr-4">
-                  <Badge className="mr-3 bg-sensei-accent/20 text-sensei-accent border border-sensei-accent/30">
-                    {currentChord}
-                  </Badge>
-                  <Button 
-                    onClick={handleChordToggle}
-                    variant="outline" 
-                    size="sm"
-                    className="bg-transparent border-gray-700 hover:bg-gray-800"
-                  >
-                    Show {currentChord === "C" ? "E7" : "C"} Voicing
-                  </Button>
-                </div>
+        {/* Chord Grid Area */}
+        <div className="flex-1 overflow-auto">
+          {!showSoloAnalysis ? (
+            <div className="flex flex-col h-full">
+              <div className="flex-1 overflow-auto">
+                <ChordGrid />
               </div>
-              
-              <TabsContent value="sheet" className="h-full">
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>Staff notation will be displayed here</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="keyboard" className="h-full">
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>Keyboard visualization will be displayed here</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="guitar" className="h-full">
+              <div className="h-52 border-t border-gray-800 bg-gray-900">
                 <GuitarFretboard notes={displayedNotes} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+              </div>
+            </div>
+          ) : (
+            <SoloAnalysis 
+              currentChord={currentChord} 
+              feedback={soloFeedback[feedbackIndex]} 
+              scaleRecommendations={scaleRecommendations}
+              playbackTime={playbackTime}
+              previousChord={getPreviousChord()}
+              nextChord={getNextChord()}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
