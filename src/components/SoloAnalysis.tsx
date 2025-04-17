@@ -1,8 +1,9 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, ChevronRight, Music, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import GuitarChordDiagram from "./GuitarChordDiagram";
+import { getChordPositions } from "@/lib/chordPositions";
 
 interface ScaleRecommendation {
   name: string;
@@ -15,13 +16,17 @@ interface SoloAnalysisProps {
   feedback: string;
   scaleRecommendations: ScaleRecommendation[];
   playbackTime: number;
+  previousChord?: string;
+  nextChord?: string;
 }
 
 const SoloAnalysis = ({ 
   currentChord, 
   feedback, 
   scaleRecommendations,
-  playbackTime 
+  playbackTime,
+  previousChord,
+  nextChord
 }: SoloAnalysisProps) => {
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -50,6 +55,40 @@ const SoloAnalysis = ({
 
   return (
     <div className="p-4 h-full overflow-auto">
+      {/* Chord progression display with diagrams */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-3">코드 진행</h3>
+        <div className="flex flex-wrap gap-4 justify-center">
+          {previousChord && (
+            <div className="chord-display bg-gray-800 p-3 rounded-lg opacity-70">
+              <div className="text-sm text-gray-400 text-center mb-1">이전 코드</div>
+              <GuitarChordDiagram 
+                chordName={previousChord} 
+                positions={getChordPositions(previousChord)} 
+              />
+            </div>
+          )}
+          
+          <div className="chord-display bg-gray-800 p-3 rounded-lg border-2 border-sensei-accent">
+            <div className="text-sm text-sensei-accent text-center mb-1">현재 코드</div>
+            <GuitarChordDiagram 
+              chordName={currentChord} 
+              positions={getChordPositions(currentChord)} 
+            />
+          </div>
+          
+          {nextChord && (
+            <div className="chord-display bg-gray-800 p-3 rounded-lg opacity-70">
+              <div className="text-sm text-gray-400 text-center mb-1">다음 코드</div>
+              <GuitarChordDiagram 
+                chordName={nextChord} 
+                positions={getChordPositions(nextChord)} 
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="flex mb-4 space-x-2">
         <div className="bg-gray-800 text-gray-200 px-3 py-1 rounded-md flex items-center gap-2 text-sm">
           <span>현재 코드:</span>

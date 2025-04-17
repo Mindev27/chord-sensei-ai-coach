@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import TransportControls from "@/components/TransportControls";
 import ChordGrid from "@/components/ChordGrid";
-import GuitarFretboard from "@/components/GuitarFretboard";
+import GuitarFretboard, { FretboardNote } from "@/components/GuitarFretboard";
 import SoloAnalysis from "@/components/SoloAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -56,25 +56,55 @@ const scaleRecommendations = [
   { name: "A Minor Pentatonic", notes: "A C D E G A", confidence: 75 },
 ];
 
+// Define chord progression for the song
+const chordProgression = [
+  { id: 1, name: "C", section: "Verse" },
+  { id: 2, name: "G", section: "Verse" },
+  { id: 3, name: "Am", section: "Verse" },
+  { id: 4, name: "E7", section: "Verse" },
+  { id: 5, name: "F", section: "Pre-Chorus" },
+  { id: 6, name: "Fm", section: "Pre-Chorus" },
+  { id: 7, name: "C", section: "Pre-Chorus" },
+  { id: 8, name: "G", section: "Chorus" }
+];
+
 const Workspace = () => {
   const [selectedInstrument, setSelectedInstrument] = useState("guitar");
   const [currentChord, setCurrentChord] = useState("C");
   const [fretboardNotes, setFretboardNotes] = useState(cMajorChordNotes);
   const [isPlayingSolo, setIsPlayingSolo] = useState(false);
   const [currentSoloNote, setCurrentSoloNote] = useState(0);
-  const [visibleNotes, setVisibleNotes] = useState<any[]>([]);
+  const [visibleNotes, setVisibleNotes] = useState<FretboardNote[]>([]);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [feedbackIndex, setFeedbackIndex] = useState(0);
   const [showSoloAnalysis, setShowSoloAnalysis] = useState(false);
+  const [currentChordIndex, setCurrentChordIndex] = useState(0);
+  
+  // Get previous chord from progression
+  const getPreviousChord = () => {
+    const prevIndex = (currentChordIndex - 1 + chordProgression.length) % chordProgression.length;
+    return chordProgression[prevIndex].name;
+  };
+  
+  // Get next chord from progression
+  const getNextChord = () => {
+    const nextIndex = (currentChordIndex + 1) % chordProgression.length;
+    return chordProgression[nextIndex].name;
+  };
   
   // Toggle between different chord voicings
   const handleChordToggle = () => {
     if (currentChord === "C") {
       setCurrentChord("E7");
       setFretboardNotes(e7ChordNotes);
+      // Find E7 in chord progression
+      const e7Index = chordProgression.findIndex(chord => chord.name === "E7");
+      setCurrentChordIndex(e7Index >= 0 ? e7Index : 3); // Default to index 3 if not found
     } else {
       setCurrentChord("C");
       setFretboardNotes(cMajorChordNotes);
+      // Find C in chord progression (first occurrence)
+      setCurrentChordIndex(0); // Default to first C chord
     }
   };
   
@@ -174,6 +204,8 @@ const Workspace = () => {
               feedback={soloFeedback[feedbackIndex]} 
               scaleRecommendations={scaleRecommendations}
               playbackTime={playbackTime}
+              previousChord={getPreviousChord()}
+              nextChord={getNextChord()}
             />
           )}
         </div>

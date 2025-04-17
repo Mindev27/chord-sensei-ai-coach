@@ -1,12 +1,12 @@
-
 import { useState } from "react";
 
-interface FretboardNote {
+export interface FretboardNote {
   string: number; // 1-6 (6 is low E)
   fret: number;   // 0-15 (0 is open string)
   finger?: number; // 1-4 representing fingers (1=index, 4=pinky)
   isRoot?: boolean;
   isHighlighted?: boolean;
+  duration?: number; // For animated solo playback
 }
 
 interface GuitarFretboardProps {
