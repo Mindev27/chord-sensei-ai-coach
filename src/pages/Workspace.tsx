@@ -11,19 +11,19 @@ import { Download, Save, Share2 } from "lucide-react";
 const cMajorChordNotes = [
   { string: 5, fret: 3, finger: 3, isRoot: true },  // C (root)
   { string: 4, fret: 2, finger: 2 },                // E
-  { string: 3, fret: 0 },                           // G
+  { string: 3, fret: 0, finger: 0 },                // G
   { string: 2, fret: 1, finger: 1 },                // C
-  { string: 1, fret: 0 },                           // E
+  { string: 1, fret: 0, finger: 0 },                // E
 ];
 
 // Mock data for E7 chord (chromatic mediant in the song)
 const e7ChordNotes = [
-  { string: 6, fret: 0, isRoot: true },            // E (root)
-  { string: 5, fret: 2, finger: 2 },               // B
-  { string: 4, fret: 0 },                          // E
-  { string: 3, fret: 1, finger: 1 },               // G#
-  { string: 2, fret: 0 },                          // B
-  { string: 1, fret: 0 },                          // E
+  { string: 6, fret: 0, finger: 0, isRoot: true },  // E (root)
+  { string: 5, fret: 2, finger: 2 },                // B
+  { string: 4, fret: 0, finger: 0 },                // E
+  { string: 3, fret: 1, finger: 1 },                // G#
+  { string: 2, fret: 0, finger: 0 },                // B
+  { string: 1, fret: 0, finger: 0 },                // E
 ];
 
 const Workspace = () => {
