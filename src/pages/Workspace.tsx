@@ -7,9 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Download, Save, Share2 } from "lucide-react";
 
-// Mock data for the fretboard notes
-const mockFretboardNotes = [
-  // C Major chord
+// Mock data for "Don't Look Back in Anger" C Major chord on the fretboard
+const cMajorChordNotes = [
   { string: 5, fret: 3, finger: 3, isRoot: true },  // C (root)
   { string: 4, fret: 2, finger: 2 },                // E
   { string: 3, fret: 0 },                           // G
@@ -17,8 +16,31 @@ const mockFretboardNotes = [
   { string: 1, fret: 0 },                           // E
 ];
 
+// Mock data for E7 chord (chromatic mediant in the song)
+const e7ChordNotes = [
+  { string: 6, fret: 0, isRoot: true },            // E (root)
+  { string: 5, fret: 2, finger: 2 },               // B
+  { string: 4, fret: 0 },                          // E
+  { string: 3, fret: 1, finger: 1 },               // G#
+  { string: 2, fret: 0 },                          // B
+  { string: 1, fret: 0 },                          // E
+];
+
 const Workspace = () => {
   const [selectedInstrument, setSelectedInstrument] = useState("guitar");
+  const [currentChord, setCurrentChord] = useState("C");
+  const [fretboardNotes, setFretboardNotes] = useState(cMajorChordNotes);
+  
+  // Toggle between different chord voicings
+  const handleChordToggle = () => {
+    if (currentChord === "C") {
+      setCurrentChord("E7");
+      setFretboardNotes(e7ChordNotes);
+    } else {
+      setCurrentChord("C");
+      setFretboardNotes(cMajorChordNotes);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-sensei-background flex">
@@ -32,8 +54,8 @@ const Workspace = () => {
         {/* Header with song info */}
         <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center">
           <div>
-            <h1 className="text-xl font-bold">Currently Analyzing</h1>
-            <p className="text-gray-400 text-sm">Demo Song - 3:20</p>
+            <h1 className="text-xl font-bold">Don't Look Back in Anger</h1>
+            <p className="text-gray-400 text-sm">Oasis - 4:48</p>
           </div>
           
           <div className="ml-auto flex gap-2">
@@ -81,6 +103,16 @@ const Workspace = () => {
                   Guitar
                 </TabsTrigger>
               </TabsList>
+              <div className="ml-auto flex items-center pr-4">
+                <Button 
+                  onClick={handleChordToggle}
+                  variant="outline" 
+                  size="sm"
+                  className="bg-transparent border-gray-700 hover:bg-gray-800"
+                >
+                  Show {currentChord === "C" ? "E7" : "C"} Voicing
+                </Button>
+              </div>
             </div>
             
             <TabsContent value="sheet" className="h-full">
@@ -96,7 +128,7 @@ const Workspace = () => {
             </TabsContent>
             
             <TabsContent value="guitar" className="h-full">
-              <GuitarFretboard notes={mockFretboardNotes} />
+              <GuitarFretboard notes={fretboardNotes} />
             </TabsContent>
           </Tabs>
         </div>
