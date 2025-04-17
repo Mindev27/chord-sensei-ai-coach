@@ -92,74 +92,111 @@ const Workspace = () => {
     return chordProgression[nextIndex].name;
   };
   
-  // Toggle between different chord voicings
+  // Toggle between different chord voicings (manual)
+  // This might conflict with automatic updates during solo playback
   const handleChordToggle = () => {
-    if (currentChord === "C") {
-      setCurrentChord("E7");
-      setFretboardNotes(e7ChordNotes);
-      // Find E7 in chord progression
-      const e7Index = chordProgression.findIndex(chord => chord.name === "E7");
-      setCurrentChordIndex(e7Index >= 0 ? e7Index : 3); // Default to index 3 if not found
-    } else {
-      setCurrentChord("C");
-      setFretboardNotes(cMajorChordNotes);
-      // Find C in chord progression (first occurrence)
-      setCurrentChordIndex(0); // Default to first C chord
-    }
+    if (isPlayingSolo) return; // Disable manual toggle during solo playback
+
+    const newChordName = currentChord === "C" ? "E7" : "C";
+    const newChordIndex = chordProgression.findIndex(chord => chord.name === newChordName);
+    
+    setCurrentChordIndex(newChordIndex >= 0 ? newChordIndex : (currentChord === "C" ? 3 : 0));
+    // currentChord and fretboardNotes will update via useEffect hooks below
   };
   
   // Handle play/stop solo
   const toggleSoloPlayback = () => {
     if (isPlayingSolo) {
       setIsPlayingSolo(false);
+      // Optional: Reset solo state on manual stop
+      // setCurrentSoloNote(0);
+      // setVisibleNotes([]);
+      // setPlaybackTime(0);
+      // setCurrentChordIndex(0); // Reset to start chord?
+    } else {
+      // Reset state before starting playback
       setCurrentSoloNote(0);
       setVisibleNotes([]);
-    } else {
+      setPlaybackTime(0);
+      setCurrentChordIndex(0); // Start from the beginning chord index
       setIsPlayingSolo(true);
-      setShowSoloAnalysis(true);
+      setShowSoloAnalysis(true); // Ensure analysis tab is shown
     }
   };
-  
+
+  // Effect to update the currentChord state when currentChordIndex changes
+  useEffect(() => {
+    const newChordName = chordProgression[currentChordIndex]?.name || "C";
+    setCurrentChord(newChordName);
+  }, [currentChordIndex]);
+
+  // Effect to update the fretboardNotes (backing chord) when currentChordIndex changes
+  useEffect(() => {
+    const chordName = chordProgression[currentChordIndex]?.name;
+    if (chordName) {
+      // Replace this with a proper lookup function based on chordPositions or similar
+      const notes = chordName === "E7" ? e7ChordNotes : cMajorChordNotes; 
+      setFretboardNotes(notes);
+    }
+  }, [currentChordIndex]);
+
   // Solo playback effect
   useEffect(() => {
-    let interval: number | undefined;
-    
-    if (isPlayingSolo) {
-      interval = window.setInterval(() => {
-        setCurrentSoloNote(prev => {
-          if (prev >= soloNotes.length - 1) {
-            setIsPlayingSolo(false);
-            return 0;
-          }
-          return prev + 1;
+    let intervalId: number | undefined;
+
+    if (isPlayingSolo && currentSoloNote < soloNotes.length) {
+      // Calculate duration for the *current* note to set the interval delay
+      const currentNoteData = soloNotes[currentSoloNote];
+      const noteDuration = currentNoteData?.duration || 800;
+      const chordDuration = 2000; // Approx duration per chord for synchronization
+
+      intervalId = window.setInterval(() => {
+        // Actions to perform *after* noteDuration has passed
+
+        // 1. Calculate new playback time (reflecting the time just passed)
+        const newPlaybackTime = playbackTime + noteDuration;
+
+        // 2. Determine the chord index based on the *new* playback time
+        const newChordIndex = Math.floor(newPlaybackTime / chordDuration) % chordProgression.length;
+        setCurrentChordIndex(newChordIndex); // Triggers other useEffects for currentChord and fretboardNotes
+
+        // 3. Update visible notes (adding the note that just finished)
+        // Need to use functional update for setVisibleNotes if relying on currentNoteData from outer scope
+        setVisibleNotes(prevVisibleNotes => {
+           const newNotes = [...prevVisibleNotes, currentNoteData];
+           return newNotes.length > 4 ? newNotes.slice(1) : newNotes;
         });
-        
-        setPlaybackTime(prev => prev + soloNotes[currentSoloNote].duration);
-        
-        // Update displayed notes
-        setVisibleNotes(prev => {
-          const newNotes = [...prev, soloNotes[currentSoloNote]];
-          // Keep only the last 4 notes visible
-          if (newNotes.length > 4) {
-            return newNotes.slice(1);
-          }
-          return newNotes;
-        });
-        
-        // Update feedback message
+
+        // 4. Update feedback (based on the note that just finished)
         if (currentSoloNote % 2 === 0) {
-          setFeedbackIndex(prev => (prev + 1) % soloFeedback.length);
+           setFeedbackIndex(prev => (prev + 1) % soloFeedback.length);
         }
-        
-      }, soloNotes[currentSoloNote]?.duration || 800);
+
+        // 5. Update playback time state *after* using its previous value
+        setPlaybackTime(newPlaybackTime);
+
+        // 6. Move to the next note, or stop if done
+        const nextNoteIndex = currentSoloNote + 1;
+        if (nextNoteIndex >= soloNotes.length) {
+          setIsPlayingSolo(false);
+          // Keep last note state or reset?
+          // setCurrentSoloNote(0); 
+        } else {
+          setCurrentSoloNote(nextNoteIndex);
+        }
+
+      }, noteDuration); // Set interval delay based on current note's duration
     }
-    
+
     return () => {
-      if (interval) clearInterval(interval);
+      if (intervalId) clearInterval(intervalId);
     };
-  }, [isPlayingSolo, currentSoloNote]);
-  
-  // Calculate the combined notes (chord + solo)
+  // Dependencies need careful consideration. 
+  // playbackTime is included because it's read to calculate the *next* time. 
+  // currentSoloNote drives the timing and note data.
+  }, [isPlayingSolo, currentSoloNote, playbackTime, soloNotes, chordProgression.length, soloFeedback.length]);
+
+  // Calculate the combined notes (backing chord + solo notes)
   const displayedNotes = [...fretboardNotes, ...visibleNotes];
   
   return (
