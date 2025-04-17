@@ -77,7 +77,7 @@ const Workspace = () => {
   const [visibleNotes, setVisibleNotes] = useState<FretboardNote[]>([]);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [feedbackIndex, setFeedbackIndex] = useState(0);
-  const [showSoloAnalysis, setShowSoloAnalysis] = useState(false);
+  const [showSoloAnalysis, setShowSoloAnalysis] = useState(true);
   const [currentChordIndex, setCurrentChordIndex] = useState(0);
   
   // Get previous chord from progression
