@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import TransportControls from "@/components/TransportControls";
 import ChordGrid from "@/components/ChordGrid";
 import GuitarFretboard, { FretboardNote } from "@/components/GuitarFretboard";
@@ -6,7 +7,7 @@ import SoloAnalysis from "@/components/SoloAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Save, Share2, Volume2, Music2 } from "lucide-react";
+import { Download, Save, Share2, Volume2, Music2, Home } from "lucide-react";
 
 // Mock data for "Don't Look Back in Anger" C Major chord on the fretboard
 const cMajorChordNotes = [
@@ -69,6 +70,7 @@ const chordProgression = [
 ];
 
 const Workspace = () => {
+  const navigate = useNavigate();
   const [selectedInstrument, setSelectedInstrument] = useState("guitar");
   const [currentChord, setCurrentChord] = useState("C");
   const [fretboardNotes, setFretboardNotes] = useState(cMajorChordNotes);
@@ -194,7 +196,7 @@ const Workspace = () => {
   // Dependencies need careful consideration. 
   // playbackTime is included because it's read to calculate the *next* time. 
   // currentSoloNote drives the timing and note data.
-  }, [isPlayingSolo, currentSoloNote, playbackTime, soloNotes, chordProgression.length, soloFeedback.length]);
+  }, [isPlayingSolo, currentSoloNote, playbackTime]);
 
   // Calculate the combined notes (backing chord + solo notes)
   const displayedNotes = [...fretboardNotes, ...visibleNotes];
@@ -209,7 +211,7 @@ const Workspace = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header with song info */}
-        <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center">
+        <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center gap-4">
           <div>
             <h1 className="text-xl font-bold">Don't Look Back in Anger</h1>
             <p className="text-gray-400 text-sm">Oasis - 4:48</p>
@@ -229,6 +231,39 @@ const Workspace = () => {
               Share
             </Button>
           </div>
+        </div>
+
+                {/* Toggle button for chord grid / solo analysis */}
+                <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
+          <div className="flex gap-2">
+            <Button 
+              variant={showSoloAnalysis ? "default" : "outline"}
+              size="sm"
+              className={`flex items-center gap-1 ${showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
+              onClick={() => setShowSoloAnalysis(true)}
+            >
+              <Music2 className="h-4 w-4" />
+              즉흥 연주
+            </Button>
+            <Button 
+              variant={!showSoloAnalysis ? "default" : "outline"}
+              size="sm"
+              className={`flex items-center gap-1 ${!showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
+              onClick={() => setShowSoloAnalysis(false)}
+            >
+              <Volume2 className="h-4 w-4" />
+              코드 진행
+            </Button>
+          </div>
+          
+          <Button
+            onClick={toggleSoloPlayback}
+            variant="default"
+            size="sm"
+            className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
+          >
+            {isPlayingSolo ? "Stop Solo" : "Play Solo"}
+          </Button>
         </div>
         
         {/* Chord Grid Area */}
@@ -253,98 +288,6 @@ const Workspace = () => {
             />
           )}
         </div>
-        
-        {/* Toggle button for chord grid / solo analysis */}
-        <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
-          <div className="flex gap-2">
-            <Button 
-              variant={showSoloAnalysis ? "default" : "outline"}
-              size="sm"
-              className={`flex items-center gap-1 ${showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
-              onClick={() => setShowSoloAnalysis(true)}
-            >
-              <Music2 className="h-4 w-4" />
-              솔로 분석
-            </Button>
-            <Button 
-              variant={!showSoloAnalysis ? "default" : "outline"}
-              size="sm"
-              className={`flex items-center gap-1 ${!showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
-              onClick={() => setShowSoloAnalysis(false)}
-            >
-              <Volume2 className="h-4 w-4" />
-              코드 진행
-            </Button>
-          </div>
-          
-          <Button
-            onClick={toggleSoloPlayback}
-            variant="default"
-            size="sm"
-            className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
-          >
-            {isPlayingSolo ? "Stop Solo" : "Play Solo"}
-          </Button>
-        </div>
-        
-        {/* Bottom Instrument Panel - Only show when Solo Analysis is active */}
-        {showSoloAnalysis && (
-          <div className="h-52 border-t border-gray-800 bg-gray-900">
-            <Tabs defaultValue="guitar" className="w-full h-full">
-              <div className="flex border-b border-gray-800">
-                <TabsList className="bg-gray-900 h-12 px-4">
-                  <TabsTrigger 
-                    value="sheet" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Staff Notation
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="keyboard" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Keyboard
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="guitar" 
-                    className="data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-                  >
-                    Guitar
-                  </TabsTrigger>
-                </TabsList>
-                <div className="ml-auto flex items-center pr-4">
-                  <Badge className="mr-3 bg-sensei-accent/20 text-sensei-accent border border-sensei-accent/30">
-                    {currentChord}
-                  </Badge>
-                  <Button 
-                    onClick={handleChordToggle}
-                    variant="outline" 
-                    size="sm"
-                    className="bg-transparent border-gray-700 hover:bg-gray-800"
-                  >
-                    Show {currentChord === "C" ? "E7" : "C"} Voicing
-                  </Button>
-                </div>
-              </div>
-              
-              <TabsContent value="sheet" className="h-full">
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>Staff notation will be displayed here</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="keyboard" className="h-full">
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>Keyboard visualization will be displayed here</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="guitar" className="h-full">
-                <GuitarFretboard notes={displayedNotes} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
       </div>
     </div>
   );

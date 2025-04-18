@@ -244,23 +244,6 @@ const ChordProgressionVisualizer: React.FC = () => {
   
   return (
     <div className="bg-sensei-card p-6 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">코드 진행 시각화</h2>
-      
-      <div className="mb-4">
-        <label className="block text-sm mb-1">코드 진행 선택:</label>
-        <select 
-          className="bg-sensei-secondary rounded p-2 w-full max-w-md"
-          value={selectedProgression}
-          onChange={(e) => {
-            setSelectedProgression(Number(e.target.value));
-            setCurrentChordIndex(0);
-          }}
-        >
-          {PROGRESSIONS.map((prog, idx) => (
-            <option key={idx} value={idx}>{prog.name}</option>
-          ))}
-        </select>
-      </div>
       
       {/* Full chord progression display */}
       <div className="mb-4 p-3 bg-gray-800 rounded-lg">

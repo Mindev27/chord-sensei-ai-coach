@@ -67,16 +67,6 @@ const GuitarFretboard = ({ notes = [], onClick }: GuitarFretboardProps) => {
     <div className="w-full h-full bg-gray-900 overflow-auto p-4">
       <div className="flex items-center mb-4">
         <h3 className="text-lg font-medium">Guitar</h3>
-        <div className="ml-auto flex gap-2 text-xs text-gray-400">
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-sensei-accent mr-1"></div>
-            <span>Root</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-gray-300 mr-1"></div>
-            <span>Chord Tone</span>
-          </div>
-        </div>
       </div>
       
       <div className="relative" style={{ height: fretboardHeight, width: fretboardWidth + 40 }}>
