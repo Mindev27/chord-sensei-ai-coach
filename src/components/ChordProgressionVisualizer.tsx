@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GuitarFretboardWithScaleDisplay, { FretboardNote } from "./GuitarFretboardWithScaleDisplay";
+import GuitarFretboardWithScaleDisplay, { ScaleNote } from "./GuitarFretboardWithScaleDisplay";
 
 // Define note names in order
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -121,13 +121,13 @@ const PROGRESSIONS = [
 const generateFretboardNotes = (
   chordSymbol: string, 
   scaleKey: string
-): FretboardNote[] => {
+): ScaleNote[] => {
   const chord = CHORD_DEFINITIONS[chordSymbol];
   const scale = SCALE_DEFINITIONS[scaleKey];
   
   if (!chord || !scale) return [];
   
-  const notes: FretboardNote[] = [];
+  const notes: ScaleNote[] = [];
   
   // Standard guitar tuning from 6th string (low E) to 1st string (high E)
   const tuning = [4, 11, 7, 2, 9, 4]; // E, A, D, G, B, E (as indices in NOTES array)
@@ -305,7 +305,6 @@ const ChordProgressionVisualizer: React.FC = () => {
         </div>
       </div>
       
-      {/* Fretboard visualization */}
       <div className="mb-3">
         <div className="flex justify-between mb-2">
           <div className="text-sm text-gray-400">

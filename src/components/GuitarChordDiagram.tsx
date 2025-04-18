@@ -1,5 +1,13 @@
 import React from "react";
 
+export interface ChordPosition {
+  frets: number[];  // 6 strings from low E to high E
+  fingers: number[]; // finger numbers (1-4) or 0 for open strings
+  baseFret: number;  // starting fret position
+  barres?: number[]; // fret numbers where a barre chord is applied
+}
+
+// ChordFret 인터페이스 추가
 export interface ChordFret {
   string: number; // 1-6 (1=high E, 6=low E)
   fret: number;   // 0-24 (0=open string, X=muted)
@@ -9,125 +17,91 @@ export interface ChordFret {
 
 interface GuitarChordDiagramProps {
   chordName: string;
-  positions: ChordFret[];
-  compact?: boolean; // Add compact mode option
+  positions: ChordPosition[];
 }
 
-const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({ 
-  chordName, 
-  positions,
-  compact = false
-}) => {
-  const strings = 6;
-  const frets = 5;  // Show 5 frets in the diagram
-  const startFret = positions.length > 0 ? 
-    Math.max(1, Math.min(...positions.filter(p => p.fret > 0).map(p => p.fret))) : 1;
+const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({ chordName, positions }) => {
+  // Use the first position if available
+  const position = positions && positions.length > 0 ? positions[0] : null;
   
-  // Find the highest displayed fret
-  const endFret = Math.min(startFret + frets - 1, 
-    positions.length > 0 ? 
-      Math.max(...positions.map(p => p.fret)) : startFret + frets - 1);
+  if (!position) {
+    return <div className="text-center text-gray-400">No chord data</div>;
+  }
   
-  // Adjust dimensions for compact mode
-  const width = compact ? 50 : 80;
-  const height = compact ? 60 : 100;
-  const fretSpacing = compact ? 12 : 20;
-  const stringSpacing = compact ? 10 : 16;
-  const dotSize = compact ? 8 : 12;
+  const { frets, fingers, baseFret, barres = [] } = position;
+  
+  // Number of frets to display (usually 4 or 5)
+  const numFrets = 5;
+  // Number of strings (standard guitar has 6)
+  const numStrings = 6;
   
   return (
-    <div className={`guitar-chord-diagram flex flex-col items-center ${compact ? 'scale-90' : ''}`}>
-      {!compact && <div className="text-lg font-bold mb-4">{chordName}</div>}
-      <div className="relative" style={{ 
-        width: `${width}px`, 
-        height: `${height}px`, 
-        marginTop: compact ? '10px' : '20px' 
-      }}>
-        {/* Chord position indicator (if starting above 1st fret) */}
-        {startFret > 1 && (
-          <div className={`absolute text-xs text-gray-400 left-[-${compact ? 15 : 20}px] top-[10px]`}>
-            {startFret}
-          </div>
-        )}
-        
-        {/* Horizontal fret lines */}
-        {Array.from({ length: frets }, (_, i) => (
-          <div 
-            key={`fret-${i}`}
-            className={`absolute w-full h-[1px] bg-gray-400`}
-            style={{ top: `${fretSpacing * i}px` }}
-          ></div>
-        ))}
-        
-        {/* Vertical string lines */}
-        {Array.from({ length: strings }, (_, i) => (
-          <div 
-            key={`string-${i}`}
-            className="absolute w-[1px] bg-gray-400"
-            style={{ 
-              left: `${stringSpacing * i}px`, 
-              top: '0px',
-              height: `${height - 20}px`
-            }}
-          ></div>
-        ))}
-        
-        {/* String status at nut (open, muted) */}
-        {Array.from({ length: strings }, (_, i) => {
-          const stringNum = strings - i;
-          const pos = positions.find(p => p.string === stringNum);
-          
-          // Skip if the position is fretted (not open or muted)
-          if (pos && pos.fret > 0) return null;
-          
-          // Determine if string is muted or open
-          const isMuted = pos && pos.fret === -1;
-          const isOpen = pos && pos.fret === 0;
-          
-          return (
+    <div className="guitar-chord-diagram flex flex-col items-center">
+      <div className="text-center text-sm font-medium mb-1">{chordName}</div>
+      
+      <div className="relative w-24 h-28">
+        {/* Fret board background */}
+        <div className="absolute inset-0 flex flex-col justify-between">
+          {/* Fret lines */}
+          {Array.from({ length: numFrets }).map((_, i) => (
             <div 
-              key={`nut-${i}`}
-              className="absolute flex items-center justify-center text-sm"
-              style={{ 
-                left: `${stringSpacing * i - (compact ? 4 : 6)}px`, 
-                top: '-15px',
-                width: compact ? '8px' : '12px',
-                height: compact ? '8px' : '12px'
-              }}
-            >
-              {isMuted && <span className={`text-gray-400 ${compact ? 'text-xs' : 'text-sm'}`}>✕</span>}
-              {isOpen && <div className={`rounded-full border-2 border-gray-400`} style={{
-                width: compact ? '8px' : '16px',
-                height: compact ? '8px' : '16px'
-              }}></div>}
-            </div>
-          );
-        })}
+              key={`fret-${i}`} 
+              className={`w-full h-px bg-gray-500 ${i === 0 && baseFret === 1 ? 'h-1 bg-gray-300' : ''}`} 
+            />
+          ))}
+        </div>
+        
+        {/* String lines */}
+        <div className="absolute inset-0 flex justify-between">
+          {Array.from({ length: numStrings }).map((_, i) => (
+            <div key={`string-${i}`} className="h-full w-px bg-gray-500" />
+          ))}
+        </div>
         
         {/* Finger positions */}
-        {positions.filter(p => p.fret > 0).map((pos, i) => {
-          const stringIdx = strings - pos.string;
-          const relFret = pos.fret - startFret;
-          
-          // Skip if the fret is outside our display range
-          if (relFret < 0 || relFret >= frets) return null;
-          
-          return (
-            <div 
-              key={`dot-${i}`}
-              className={`absolute flex items-center justify-center rounded-full 
-                ${pos.isRoot ? 'bg-sensei-accent' : 'bg-gray-300'} ${compact ? 'text-[8px]' : 'text-xs'} font-medium text-black`}
-              style={{ 
-                width: compact ? '10px' : '16px',
-                height: compact ? '10px' : '16px',
-                left: `${stringSpacing * stringIdx - (compact ? 5 : 8)}px`, 
-                top: `${fretSpacing * relFret - (compact ? 5 : 10)}px`,
-              }}
-            >
-              {pos.finger && pos.finger}
+        <div className="absolute inset-0 grid grid-cols-6 grid-rows-5 gap-0">
+          {frets.map((fret, stringIndex) => {
+            // Skip if string is not played (X)
+            if (fret === -1) return null;
+            
+            // Position in the diagram
+            const row = fret === 0 ? 0 : (fret - baseFret + 1);
+            const col = stringIndex;
+            
+            if (row < 0 || row >= numFrets) return null;
+            
+            return (
+              <div 
+                key={`finger-${stringIndex}`}
+                className="relative flex items-center justify-center"
+                style={{
+                  gridColumn: col + 1,
+                  gridRow: row + 1,
+                }}
+              >
+                <div className="absolute w-5 h-5 bg-sensei-accent rounded-full flex items-center justify-center">
+                  <span className="text-xs text-white">{fingers[stringIndex] || ''}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* String labels (X or O for open strings) */}
+        <div className="absolute top-0 transform -translate-y-6 w-full flex justify-between px-1">
+          {frets.map((fret, index) => (
+            <div key={`label-${index}`} className="text-xs">
+              {fret === -1 ? 'X' : fret === 0 ? 'O' : ''}
             </div>
-          );
-        })}
+          ))}
+        </div>
+        
+        {/* Base fret label */}
+        {baseFret > 1 && (
+          <div className="absolute left-0 top-2 transform -translate-x-5 text-xs">
+            {baseFret}fr
+          </div>
+        )}
       </div>
     </div>
   );

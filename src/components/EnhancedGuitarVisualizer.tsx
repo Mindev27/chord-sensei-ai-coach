@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GuitarFretboardWithScaleDisplay, { FretboardNote } from "./GuitarFretboardWithScaleDisplay";
+import GuitarFretboardWithScaleDisplay, { ScaleNote } from "./GuitarFretboardWithScaleDisplay";
 
 // Define note names in order
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -63,11 +63,11 @@ const SCALE_TYPES = {
 };
 
 // Generate fretboard notes for a given chord
-const generateChordNotes = (chordType: string): FretboardNote[] => {
+const generateChordNotes = (chordType: string): ScaleNote[] => {
   if (!CHORD_TYPES[chordType as keyof typeof CHORD_TYPES]) return [];
   
   const chord = CHORD_TYPES[chordType as keyof typeof CHORD_TYPES];
-  const notes: FretboardNote[] = [];
+  const notes: ScaleNote[] = [];
   
   // Standard guitar tuning from 6th string (low E) to 1st string (high E)
   const tuning = [4, 11, 7, 2, 9, 4]; // E, A, D, G, B, E (as indices in NOTES array)
@@ -99,11 +99,11 @@ const generateChordNotes = (chordType: string): FretboardNote[] => {
 };
 
 // Generate fretboard notes for a given scale
-const generateScaleNotes = (scaleType: string): FretboardNote[] => {
+const generateScaleNotes = (scaleType: string): ScaleNote[] => {
   if (!SCALE_TYPES[scaleType as keyof typeof SCALE_TYPES]) return [];
   
   const scale = SCALE_TYPES[scaleType as keyof typeof SCALE_TYPES];
-  const notes: FretboardNote[] = [];
+  const notes: ScaleNote[] = [];
   
   // Standard guitar tuning from 6th string (low E) to 1st string (high E)
   const tuning = [4, 11, 7, 2, 9, 4]; // E, A, D, G, B, E (as indices in NOTES array)
@@ -259,7 +259,7 @@ const EnhancedGuitarVisualizer: React.FC = () => {
   const scaleNotes = generateScaleNotes(selectedScale);
   
   // Combine notes based on display mode
-  let displayNotes: FretboardNote[] = [];
+  let displayNotes: ScaleNote[] = [];
   if (displayMode === "all") {
     displayNotes = [...scaleNotes, ...chordNotes];
   } else if (displayMode === "chord") {
@@ -351,6 +351,8 @@ const EnhancedGuitarVisualizer: React.FC = () => {
           notes={displayNotes}
           recommendedScale={selectedScale}
           recommendedChord={selectedChord}
+          maxFrets={15}
+          showLabels={true}
         />
       </div>
       

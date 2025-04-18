@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, ChevronRight, Music, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import GuitarChordDiagram from "./GuitarChordDiagram";
-import GuitarFretboardWithScaleDisplay, { FretboardNote } from "./GuitarFretboardWithScaleDisplay";
+import GuitarChordDiagram, { ChordPosition, ChordFret } from "./GuitarChordDiagram";
+import GuitarFretboardWithScaleDisplay, { ScaleNote } from "./GuitarFretboardWithScaleDisplay";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import { getChordPositions } from "@/lib/chordPositions";
 import GuitarTabNotation, { TabNote } from "./GuitarTabNotation";
-import { ChordFret } from "./GuitarChordDiagram";
+import { getChordPositionsByDifficulty as getChordPositionsByDifficultyUtil } from "@/utils/chordUtils";
 
 // Define note names in order
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -179,7 +179,7 @@ const getRecommendedScales = (chordName: string): { name: string, notes: string,
 const generateFretboardNotes = (
   chordName: string, 
   scaleName: string
-): FretboardNote[] => {
+): ScaleNote[] => {
   // Fallback chord and scale if not found
   const chord = CHORD_DEFINITIONS[chordName] || { 
     root: "E", 
@@ -189,7 +189,7 @@ const generateFretboardNotes = (
   
   const scale = SCALE_DEFINITIONS[scaleName] || SCALE_DEFINITIONS["E Mixolydian"];
   
-  const notes: FretboardNote[] = [];
+  const notes: ScaleNote[] = [];
   
   // Standard guitar tuning from 6th string (low E) to 1st string (high E)
   const tuning = [4, 11, 7, 2, 9, 4]; // E, A, D, G, B, E (as indices in NOTES array)
@@ -325,22 +325,6 @@ const advancedChords: Record<string, ChordFret[]> = {
   ]
 };
 
-// 난이도에 따른 코드 포지션 반환 함수
-const getChordPositionsByDifficulty = (chordName: string, difficultyLevel: "상" | "중" | "하"): ChordFret[] => {
-  // 난이도 '하': 간소화된 코드 포지션
-  if (difficultyLevel === "하" && simplifiedChords[chordName]) {
-    return simplifiedChords[chordName];
-  }
-  
-  // 난이도 '상': 고급 코드 포지션
-  if (difficultyLevel === "상" && advancedChords[chordName]) {
-    return advancedChords[chordName];
-  }
-  
-  // 난이도 '중' 또는 기본값: 기본 코드 포지션
-  return getChordPositions(chordName);
-};
-
 const SoloAnalysis = ({ 
   currentChord, 
   feedback, 
@@ -377,14 +361,14 @@ const SoloAnalysis = ({
         description: "BBKing 스타일의 단음 벤딩으로 강한 표현력을 더함",
         level: "초급",
         tabNotes: [
-          { string: 2, fret: 8, position: 0 },
-          { string: 2, fret: 10, position: 2 },
-          { string: 2, fret: 8, position: 4, technique: "bend", bendValue: 0.5 },
-          { string: 2, fret: 8, position: 6 },
-          { string: 1, fret: 8, position: 8 },
-          { string: 1, fret: 10, position: 10 },
-          { string: 1, fret: 8, position: 12, technique: "bend", bendValue: 1 },
-          { string: 1, fret: 8, position: 14 },
+          { string: 2, fret: 8, position: 0, duration: 250 },
+          { string: 2, fret: 10, position: 2, duration: 250 },
+          { string: 2, fret: 8, position: 4, technique: "bend", bendValue: 0.5, duration: 250 },
+          { string: 2, fret: 8, position: 6, duration: 250 },
+          { string: 1, fret: 8, position: 8, duration: 250 },
+          { string: 1, fret: 10, position: 10, duration: 250 },
+          { string: 1, fret: 8, position: 12, technique: "bend", bendValue: 1, duration: 250 },
+          { string: 1, fret: 8, position: 14, duration: 250 },
         ]
       }
     ],
@@ -394,18 +378,18 @@ const SoloAnalysis = ({
         description: "Slow Dancing의 더블스탑 벤딩을 활용한 표현",
         level: "중급",
         tabNotes: [
-          { string: 2, fret: 10, position: 0 },
-          { string: 1, fret: 8, position: 0 },
-          { string: 2, fret: 10, position: 2, technique: "bend", bendValue: 0.5 },
-          { string: 1, fret: 8, position: 2, technique: "bend", bendValue: 0.5 },
-          { string: 2, fret: 10, position: 4, technique: "bend", bendValue: 1 },
-          { string: 1, fret: 8, position: 4, technique: "bend", bendValue: 1 },
-          { string: 2, fret: 10, position: 6, technique: "release" },
-          { string: 1, fret: 8, position: 6, technique: "release" },
-          { string: 2, fret: 8, position: 8 },
-          { string: 3, fret: 9, position: 10 },
-          { string: 3, fret: 7, position: 12, technique: "hammer-on" },
-          { string: 3, fret: 9, position: 14, technique: "pull-off" },
+          { string: 2, fret: 10, position: 0, duration: 250 },
+          { string: 1, fret: 8, position: 0, duration: 250 },
+          { string: 2, fret: 10, position: 2, technique: "bend", bendValue: 0.5, duration: 250 },
+          { string: 1, fret: 8, position: 2, technique: "bend", bendValue: 0.5, duration: 250 },
+          { string: 2, fret: 10, position: 4, technique: "bend", bendValue: 1, duration: 250 },
+          { string: 1, fret: 8, position: 4, technique: "bend", bendValue: 1, duration: 250 },
+          { string: 2, fret: 10, position: 6, technique: "release", duration: 250 },
+          { string: 1, fret: 8, position: 6, technique: "release", duration: 250 },
+          { string: 2, fret: 8, position: 8, duration: 250 },
+          { string: 3, fret: 9, position: 10, duration: 250 },
+          { string: 3, fret: 7, position: 12, technique: "hammer-on", duration: 250 },
+          { string: 3, fret: 9, position: 14, technique: "pull-off", duration: 250 },
         ]
       }
     ],
@@ -415,20 +399,20 @@ const SoloAnalysis = ({
         description: "텍사스 블루스의 전형적인 포지션 전환 패턴",
         level: "고급",
         tabNotes: [
-          { string: 3, fret: 7, position: 0 },
-          { string: 3, fret: 9, position: 1 },
-          { string: 3, fret: 7, position: 2, technique: "hammer-on" },
-          { string: 3, fret: 9, position: 3, technique: "pull-off" },
-          { string: 3, fret: 7, position: 4 },
-          { string: 4, fret: 9, position: 5 },
-          { string: 4, fret: 7, position: 6, technique: "slide-down" },
-          { string: 4, fret: 5, position: 7 },
-          { string: 5, fret: 7, position: 8 },
-          { string: 5, fret: 5, position: 9, technique: "slide-up" },
-          { string: 5, fret: 7, position: 10 },
-          { string: 4, fret: 5, position: 11 },
-          { string: 4, fret: 7, position: 12, technique: "bend", bendValue: 1.5 },
-          { string: 4, fret: 7, position: 14, technique: "vibrato" },
+          { string: 3, fret: 7, position: 0, duration: 250 },
+          { string: 3, fret: 9, position: 1, duration: 250 },
+          { string: 3, fret: 7, position: 2, technique: "hammer-on", duration: 250 },
+          { string: 3, fret: 9, position: 3, technique: "pull-off", duration: 250 },
+          { string: 3, fret: 7, position: 4, duration: 250 },
+          { string: 4, fret: 9, position: 5, duration: 250 },
+          { string: 4, fret: 7, position: 6, technique: "slide-down", duration: 250 },
+          { string: 4, fret: 5, position: 7, duration: 250 },
+          { string: 5, fret: 7, position: 8, duration: 250 },
+          { string: 5, fret: 5, position: 9, technique: "slide-up", duration: 250 },
+          { string: 5, fret: 7, position: 10, duration: 250 },
+          { string: 4, fret: 5, position: 11, duration: 250 },
+          { string: 4, fret: 7, position: 12, technique: "bend", bendValue: 1.5, duration: 250 },
+          { string: 4, fret: 7, position: 14, technique: "vibrato", duration: 250 },
         ]
       }
     ],
@@ -438,18 +422,18 @@ const SoloAnalysis = ({
         description: "C 메이저에서 순차적인 아르페지오 패턴",
         level: "중급",
         tabNotes: [
-          { string: 5, fret: 3, position: 0 },
-          { string: 4, fret: 2, position: 1 },
-          { string: 3, fret: 0, position: 2 },
-          { string: 2, fret: 1, position: 3 },
-          { string: 1, fret: 0, position: 4 },
-          { string: 2, fret: 1, position: 5 },
-          { string: 3, fret: 0, position: 6 },
-          { string: 4, fret: 2, position: 7 },
-          { string: 5, fret: 3, position: 8 },
-          { string: 4, fret: 2, position: 9 },
-          { string: 3, fret: 0, position: 10 },
-          { string: 2, fret: 1, position: 11 },
+          { string: 5, fret: 3, position: 0, duration: 250 },
+          { string: 4, fret: 2, position: 1, duration: 250 },
+          { string: 3, fret: 0, position: 2, duration: 250 },
+          { string: 2, fret: 1, position: 3, duration: 250 },
+          { string: 1, fret: 0, position: 4, duration: 250 },
+          { string: 2, fret: 1, position: 5, duration: 250 },
+          { string: 3, fret: 0, position: 6, duration: 250 },
+          { string: 4, fret: 2, position: 7, duration: 250 },
+          { string: 5, fret: 3, position: 8, duration: 250 },
+          { string: 4, fret: 2, position: 9, duration: 250 },
+          { string: 3, fret: 0, position: 10, duration: 250 },
+          { string: 2, fret: 1, position: 11, duration: 250 },
         ]
       }
     ],
@@ -459,15 +443,15 @@ const SoloAnalysis = ({
         description: "A7에서 미소리디안 모드를 활용한 블루스 패턴",
         level: "초급",
         tabNotes: [
-          { string: 3, fret: 6, position: 0 },
-          { string: 3, fret: 9, position: 1 },
-          { string: 3, fret: 7, position: 2 },
-          { string: 3, fret: 6, position: 3 },
-          { string: 2, fret: 8, position: 4 },
-          { string: 2, fret: 7, position: 5, technique: "bend", bendValue: 0.5 },
-          { string: 2, fret: 5, position: 6 },
-          { string: 3, fret: 7, position: 7 },
-          { string: 3, fret: 6, position: 8, technique: "vibrato" },
+          { string: 3, fret: 6, position: 0, duration: 250 },
+          { string: 3, fret: 9, position: 1, duration: 250 },
+          { string: 3, fret: 7, position: 2, duration: 250 },
+          { string: 3, fret: 6, position: 3, duration: 250 },
+          { string: 2, fret: 8, position: 4, duration: 250 },
+          { string: 2, fret: 7, position: 5, technique: "bend", bendValue: 0.5, duration: 250 },
+          { string: 2, fret: 5, position: 6, duration: 250 },
+          { string: 3, fret: 7, position: 7, duration: 250 },
+          { string: 3, fret: 6, position: 8, technique: "vibrato", duration: 250 },
         ]
       }
     ]
@@ -479,14 +463,14 @@ const SoloAnalysis = ({
     description: "어떤 코드에서도 활용 가능한 기본 포지션 패턴",
     level: "초급",
     tabNotes: [
-      { string: 3, fret: 4, position: 0 },
-      { string: 3, fret: 6, position: 1 },
-      { string: 3, fret: 7, position: 2 },
-      { string: 2, fret: 5, position: 3 },
-      { string: 2, fret: 7, position: 4 },
-      { string: 1, fret: 5, position: 5 },
-      { string: 1, fret: 7, position: 6 },
-      { string: 1, fret: 5, position: 7, technique: "bend", bendValue: 0.5 },
+      { string: 3, fret: 4, position: 0, duration: 250 },
+      { string: 3, fret: 6, position: 1, duration: 250 },
+      { string: 3, fret: 7, position: 2, duration: 250 },
+      { string: 2, fret: 5, position: 3, duration: 250 },
+      { string: 2, fret: 7, position: 4, duration: 250 },
+      { string: 1, fret: 5, position: 5, duration: 250 },
+      { string: 1, fret: 7, position: 6, duration: 250 },
+      { string: 1, fret: 5, position: 7, technique: "bend", bendValue: 0.5, duration: 250 },
     ]
   };
   
@@ -496,7 +480,7 @@ const SoloAnalysis = ({
     : "E Mixolydian";
   
   // State to store fretboard notes
-  const [fretboardNotes, setFretboardNotes] = useState<FretboardNote[]>([]);
+  const [fretboardNotes, setFretboardNotes] = useState<ScaleNote[]>([]);
   
   // Add a new useEffect for initialization that runs only once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -611,7 +595,7 @@ const SoloAnalysis = ({
               <div className="text-sm text-gray-400 text-center mb-1">이전 코드</div>
               <GuitarChordDiagram 
                 chordName={previousChord} 
-                positions={getChordPositionsByDifficulty(previousChord, difficultyLevel)} 
+                positions={getChordPositionsByDifficultyUtil(previousChord, difficultyLevel)} 
               />
               <div className="mt-2 flex justify-between items-center">
                 <div className="flex gap-1">
@@ -643,7 +627,7 @@ const SoloAnalysis = ({
             <div className="text-sm text-sensei-accent text-center mb-1">현재 코드</div>
             <GuitarChordDiagram 
               chordName={currentChord} 
-              positions={getChordPositionsByDifficulty(currentChord, difficultyLevel)} 
+              positions={getChordPositionsByDifficultyUtil(currentChord, difficultyLevel)} 
             />
             <div className="mt-2 flex justify-between items-center">
               <div className="flex gap-1">
@@ -675,7 +659,7 @@ const SoloAnalysis = ({
               <div className="text-sm text-gray-400 text-center mb-1">다음 코드</div>
               <GuitarChordDiagram 
                 chordName={nextChord} 
-                positions={getChordPositionsByDifficulty(nextChord, difficultyLevel)} 
+                positions={getChordPositionsByDifficultyUtil(nextChord, difficultyLevel)} 
               />
               <div className="mt-2 flex justify-between items-center">
                 <div className="flex gap-1">
@@ -944,17 +928,6 @@ const SoloAnalysis = ({
                     <span className={`px-1.5 py-0.5 rounded ${getDifficultyColorClass(getChordDifficulty(currentRecommendedLick.forChord))}`}>
                       난이도: {getChordDifficulty(currentRecommendedLick.forChord)}
                     </span>
-                  </div>
-                  
-                  {/* 코드 다이어그램 추가 */}
-                  <div className="mb-3 flex justify-center">
-                    <div className="w-24 h-24">
-                      <GuitarChordDiagram 
-                        chordName={currentRecommendedLick.forChord} 
-                        positions={getChordPositionsByDifficulty(currentRecommendedLick.forChord, difficultyLevel)}
-                        compact={false}
-                      />
-                    </div>
                   </div>
                   
                   {/* Tab notation display */}

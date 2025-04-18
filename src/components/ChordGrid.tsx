@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import GuitarChordDiagram, { ChordFret } from "./GuitarChordDiagram";
+import GuitarChordDiagram, { ChordPosition, ChordFret } from "./GuitarChordDiagram";
 import { getChordPositions } from "@/lib/chordPositions";
 
 // 난이도별 코드 포지션 정의
@@ -111,19 +111,34 @@ const advancedChords: Record<string, ChordFret[]> = {
 };
 
 // 난이도에 따른 코드 포지션 반환 함수
-const getChordPositionsByDifficulty = (chordName: string, difficultyLevel: "상" | "중" | "하"): ChordFret[] => {
+const getChordPositionsByDifficulty = (chordName: string, difficultyLevel: "상" | "중" | "하"): ChordPosition[] => {
+  let chordFrets: ChordFret[];
+  
   // 난이도 '하': 간소화된 코드 포지션
   if (difficultyLevel === "하" && simplifiedChords[chordName]) {
-    return simplifiedChords[chordName];
+    chordFrets = simplifiedChords[chordName];
   }
-  
   // 난이도 '상': 고급 코드 포지션
-  if (difficultyLevel === "상" && advancedChords[chordName]) {
-    return advancedChords[chordName];
+  else if (difficultyLevel === "상" && advancedChords[chordName]) {
+    chordFrets = advancedChords[chordName];
+  }
+  // 난이도 '중' 또는 기본값: 기본 코드 포지션
+  else {
+    chordFrets = getChordPositions(chordName);
   }
   
-  // 난이도 '중' 또는 기본값: 기본 코드 포지션
-  return getChordPositions(chordName);
+  // ChordFret[] 를 ChordPosition[] 형식으로 변환
+  return [{
+    frets: [-1, -1, -1, -1, -1, -1].map((_, stringIndex) => {
+      const chordFret = chordFrets.find(cf => 6 - cf.string === stringIndex);
+      return chordFret ? chordFret.fret : -1;
+    }),
+    fingers: [0, 0, 0, 0, 0, 0].map((_, stringIndex) => {
+      const chordFret = chordFrets.find(cf => 6 - cf.string === stringIndex);
+      return chordFret?.finger || 0;
+    }),
+    baseFret: 1  // 기본 baseFret 값
+  }];
 };
 
 interface Chord {
@@ -444,7 +459,6 @@ const ChordGrid = ({ difficultyLevel = "중" }: ChordGridProps) => {
                           <GuitarChordDiagram 
                             chordName={chord.name}
                             positions={getChordPositionsByDifficulty(chord.name, difficultyLevel)}
-                            compact={true}
                           />
                         </div>
                       </div>
