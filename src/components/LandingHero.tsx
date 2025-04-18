@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MusicIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,7 @@ const LandingHero = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-sensei-background to-black opacity-50"></div>
       
       <div className="relative z-10 max-w-4xl mx-auto">
-        <div className="inline-block bg-sensei-accent p-2 px-4 rounded-full mb-6">
+        <div className="inline-block bg-sensei-accent p-2 px-4 rounded-full mb-6 mt-12">
           <p className="text-sm font-medium">Introducing ChordSensei AI</p>
         </div>
         

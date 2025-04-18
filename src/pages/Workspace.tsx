@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import TransportControls from "@/components/TransportControls";
 import ChordGrid from "@/components/ChordGrid";
 import GuitarFretboard, { FretboardNote } from "@/components/GuitarFretboard";
@@ -6,7 +7,7 @@ import SoloAnalysis from "@/components/SoloAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Save, Share2, Volume2, Music2 } from "lucide-react";
+import { Download, Save, Share2, Volume2, Music2, Home } from "lucide-react";
 
 // Mock data for "Don't Look Back in Anger" C Major chord on the fretboard
 const cMajorChordNotes = [
@@ -69,6 +70,7 @@ const chordProgression = [
 ];
 
 const Workspace = () => {
+  const navigate = useNavigate();
   const [selectedInstrument, setSelectedInstrument] = useState("guitar");
   const [currentChord, setCurrentChord] = useState("C");
   const [fretboardNotes, setFretboardNotes] = useState(cMajorChordNotes);
@@ -194,7 +196,7 @@ const Workspace = () => {
   // Dependencies need careful consideration. 
   // playbackTime is included because it's read to calculate the *next* time. 
   // currentSoloNote drives the timing and note data.
-  }, [isPlayingSolo, currentSoloNote, playbackTime, soloNotes, chordProgression.length, soloFeedback.length]);
+  }, [isPlayingSolo, currentSoloNote, playbackTime]);
 
   // Calculate the combined notes (backing chord + solo notes)
   const displayedNotes = [...fretboardNotes, ...visibleNotes];
@@ -209,12 +211,11 @@ const Workspace = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header with song info */}
-        <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center">
+        <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center gap-4">
           <div>
             <h1 className="text-xl font-bold">Don't Look Back in Anger</h1>
             <p className="text-gray-400 text-sm">Oasis - 4:48</p>
           </div>
-
           
           <div className="ml-auto flex gap-2">
             <Button variant="outline" size="sm" className="flex items-center gap-1 bg-transparent border-gray-700 hover:bg-gray-800">

@@ -11,8 +11,6 @@ const Features = () => {
         <div className="grid grid-cols-1 gap-8">
           <ChordProgressionVisualizer />
           
-          <EnhancedGuitarVisualizer />
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-sensei-card p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">AI-Powered Song Analysis</h2>
