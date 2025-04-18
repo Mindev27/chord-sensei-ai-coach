@@ -4,10 +4,12 @@ import TransportControls from "@/components/TransportControls";
 import ChordGrid from "@/components/ChordGrid";
 import GuitarFretboard, { FretboardNote } from "@/components/GuitarFretboard";
 import SoloAnalysis from "@/components/SoloAnalysis";
+import RecordingAnalysis from "@/components/RecordingAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Save, Share2, Volume2, Music2, Home } from "lucide-react";
+import { Download, Save, Share2, Volume2, Music2, Home, ChevronLeft, ChevronRight, FileMusic } from "lucide-react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock data for "Don't Look Back in Anger" C Major chord on the fretboard
 const cMajorChordNotes = [
@@ -79,8 +81,9 @@ const Workspace = () => {
   const [visibleNotes, setVisibleNotes] = useState<FretboardNote[]>([]);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [feedbackIndex, setFeedbackIndex] = useState(0);
-  const [showSoloAnalysis, setShowSoloAnalysis] = useState(true);
+  const [activeTab, setActiveTab] = useState<"improvisation" | "chords" | "recording">("improvisation");
   const [currentChordIndex, setCurrentChordIndex] = useState(0);
+  const [difficultyLevel, setDifficultyLevel] = useState<"상" | "중" | "하">("중");
   
   // Get previous chord from progression
   const getPreviousChord = () => {
@@ -122,7 +125,6 @@ const Workspace = () => {
       setPlaybackTime(0);
       setCurrentChordIndex(0); // Start from the beginning chord index
       setIsPlayingSolo(true);
-      setShowSoloAnalysis(true); // Ensure analysis tab is shown
     }
   };
 
@@ -233,51 +235,79 @@ const Workspace = () => {
           </div>
         </div>
 
-                {/* Toggle button for chord grid / solo analysis */}
-                <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
+        {/* Tab navigation */}
+        <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
           <div className="flex gap-2">
             <Button 
-              variant={showSoloAnalysis ? "default" : "outline"}
+              variant={activeTab === "improvisation" ? "default" : "outline"}
               size="sm"
-              className={`flex items-center gap-1 ${showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
-              onClick={() => setShowSoloAnalysis(true)}
+              className={`flex items-center gap-1 ${activeTab === "improvisation" ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
+              onClick={() => setActiveTab("improvisation")}
             >
               <Music2 className="h-4 w-4" />
-              즉흥 연주
+              즉흥 연주 피드백
             </Button>
             <Button 
-              variant={!showSoloAnalysis ? "default" : "outline"}
+              variant={activeTab === "chords" ? "default" : "outline"}
               size="sm"
-              className={`flex items-center gap-1 ${!showSoloAnalysis ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
-              onClick={() => setShowSoloAnalysis(false)}
+              className={`flex items-center gap-1 ${activeTab === "chords" ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
+              onClick={() => setActiveTab("chords")}
             >
               <Volume2 className="h-4 w-4" />
               코드 진행
             </Button>
+            <Button 
+              variant={activeTab === "recording" ? "default" : "outline"}
+              size="sm"
+              className={`flex items-center gap-1 ${activeTab === "recording" ? "bg-sensei-accent" : "bg-transparent border-gray-700"}`}
+              onClick={() => setActiveTab("recording")}
+            >
+              <FileMusic className="h-4 w-4" />
+              음원 연주 분석
+            </Button>
           </div>
           
-          <Button
-            onClick={toggleSoloPlayback}
-            variant="default"
-            size="sm"
-            className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
-          >
-            {isPlayingSolo ? "Stop Solo" : "Play Solo"}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* 난이도 선택 드롭다운 */}
+            <Select
+              value={difficultyLevel}
+              onValueChange={(value) => setDifficultyLevel(value as "상" | "중" | "하")}
+            >
+              <SelectTrigger className="w-24 h-8 bg-gray-800 border-gray-700 text-xs">
+                <SelectValue placeholder="난이도" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-800">
+                <SelectGroup>
+                  <SelectItem value="하" className="text-green-500">난이도: 하</SelectItem>
+                  <SelectItem value="중" className="text-yellow-500">난이도: 중</SelectItem>
+                  <SelectItem value="상" className="text-red-500">난이도: 상</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            
+            {activeTab !== "recording" && (
+              <Button
+                onClick={toggleSoloPlayback}
+                variant="default"
+                size="sm"
+                className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
+              >
+                {isPlayingSolo ? "Stop Solo" : "Play Solo"}
+              </Button>
+            )}
+          </div>
         </div>
         
-        {/* Chord Grid Area */}
         <div className="flex-1 overflow-auto">
-          {!showSoloAnalysis ? (
+          {activeTab === "chords" && (
             <div className="flex flex-col h-full">
               <div className="flex-1 overflow-auto">
-                <ChordGrid />
-              </div>
-              <div className="h-52 border-t border-gray-800 bg-gray-900">
-                <GuitarFretboard notes={displayedNotes} />
+                <ChordGrid difficultyLevel={difficultyLevel} />
               </div>
             </div>
-          ) : (
+          )}
+          
+          {activeTab === "improvisation" && (
             <SoloAnalysis 
               currentChord={currentChord} 
               feedback={soloFeedback[feedbackIndex]} 
@@ -285,7 +315,12 @@ const Workspace = () => {
               playbackTime={playbackTime}
               previousChord={getPreviousChord()}
               nextChord={getNextChord()}
+              difficultyLevel={difficultyLevel}
             />
+          )}
+          
+          {activeTab === "recording" && (
+            <RecordingAnalysis difficultyLevel={difficultyLevel} />
           )}
         </div>
       </div>

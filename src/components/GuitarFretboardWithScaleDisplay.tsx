@@ -1,219 +1,124 @@
-import { useState } from "react";
+import React from 'react';
 
-export interface FretboardNote {
-  string: number; // 1-6 (6 is low E)
-  fret: number;   // 0-15 (0 is open string)
-  finger?: number; // 1-4 representing fingers (1=index, 4=pinky)
+export interface ScaleNote {
+  string: number; // 1-6 (1 = high E, 6 = low E)
+  fret: number;   // fret number
+  noteFunction?: string; // 'R' for root, '3' for third, '5' for fifth, etc.
+  noteColor?: string; // CSS color string
   isRoot?: boolean;
-  isChordTone?: boolean; // Added to identify chord tones
-  isScaleNote?: boolean; // Added to identify scale notes
-  isHighlighted?: boolean;
-  duration?: number; // For animated solo playback
+  isChordTone?: boolean;
+  isScaleNote?: boolean;
 }
 
 interface GuitarFretboardWithScaleDisplayProps {
-  notes: FretboardNote[];
-  onClick?: (string: number, fret: number) => void;
-  recommendedScale?: string; // Name of the recommended scale
-  recommendedChord?: string; // Name of the recommended chord
+  scaleName?: string;
+  scaleNotes?: ScaleNote[];
+  notes?: ScaleNote[];
+  recommendedScale?: string;
+  recommendedChord?: string;
+  showLabels?: boolean;
+  maxFrets?: number;
 }
 
-const GuitarFretboardWithScaleDisplay = ({ 
-  notes = [], 
-  onClick,
-  recommendedScale = "",
-  recommendedChord = ""
-}: GuitarFretboardWithScaleDisplayProps) => {
-  const [hoveredPosition, setHoveredPosition] = useState<{ string: number; fret: number } | null>(null);
+const GuitarFretboardWithScaleDisplay: React.FC<GuitarFretboardWithScaleDisplayProps> = ({
+  scaleName,
+  scaleNotes = [],
+  notes = [],
+  recommendedScale,
+  recommendedChord,
+  showLabels = true,
+  maxFrets = 15
+}) => {
+  // Number of strings in a guitar (6 by default)
+  const numStrings = 6;
+  // Note names for standard tuning
+  const openStringNotes = ['E', 'B', 'G', 'D', 'A', 'E']; // high to low
   
-  // Guitar tuning (standard)
-  const strings = ["E", "B", "G", "D", "A", "E"];
+  // Use notes if provided, otherwise use scaleNotes
+  const displayNotes = notes.length > 0 ? notes : scaleNotes;
   
-  // Number of frets to display
-  const fretCount = 15;
+  // Display scale name from props or from recommendedScale
+  const displayScaleName = scaleName || recommendedScale || '';
   
-  // Calculate fretboard dimensions
-  const stringSpacing = 30; // px
-  const fretSpacing = 60;   // px
-  const fretboardHeight = stringSpacing * (strings.length - 1);
-  const fretboardWidth = fretSpacing * fretCount;
-  
-  // Special fret markers (inlays)
-  const markerPositions = [3, 5, 7, 9, 12];
-  
-  // Generate string positions (y-coordinates)
-  const stringPositions = strings.map((_, index) => index * stringSpacing);
-  
-  // Generate fret positions (x-coordinates)
-  const fretPositions = Array.from({ length: fretCount + 1 }, (_, index) => index * fretSpacing);
-  
-  // Handle click on fretboard position
-  const handleClick = (stringIndex: number, fret: number) => {
-    if (onClick) {
-      // Convert to 1-indexed string numbers (1=high E, 6=low E)
-      onClick(strings.length - stringIndex, fret);
-    }
-  };
-  
-  // Get note information at a specific position
-  const getNoteAtPosition = (stringIndex: number, fret: number) => {
-    // Convert to 1-indexed string numbers (1=high E, 6=low E)
-    const stringNumber = strings.length - stringIndex;
-    return notes.find(note => note.string === stringNumber && note.fret === fret);
-  };
-  
-  // Get marker color based on note properties
-  const getMarkerColor = (note: FretboardNote | undefined) => {
-    if (!note) return "bg-gray-700";
-    if (note.isRoot) return "bg-sensei-accent";
-    if (note.isChordTone) return "bg-orange-400"; // Chord tones in orange
-    if (note.isScaleNote) return "bg-green-400"; // Scale notes in green
-    if (note.isHighlighted) return "bg-blue-500";
-    return "bg-gray-300";
-  };
-
-  return (
-    <div className="w-full h-full bg-gray-900 overflow-auto p-4">
-      <div className="flex items-center mb-4">
-        <h3 className="text-lg font-medium">Guitar</h3>
-        
-        {/* Display recommended scale and chord */}
-        <div className="ml-4 flex flex-col">
-          {recommendedScale && (
-            <span className="text-sm text-green-400">Scale: {recommendedScale}</span>
-          )}
-          {recommendedChord && (
-            <span className="text-sm text-orange-400">Chord: {recommendedChord}</span>
-          )}
-        </div>
-        
-        <div className="ml-auto flex gap-2 text-xs text-gray-400">
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-sensei-accent mr-1"></div>
-            <span>Root</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-orange-400 mr-1"></div>
-            <span>Chord Tone</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-green-400 mr-1"></div>
-            <span>Scale Note</span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="relative" style={{ height: fretboardHeight, width: fretboardWidth + 40 }}>
-        {/* Nut */}
-        <div 
-          className="absolute left-[40px] top-0 w-[4px] h-full bg-gray-400 z-20"
-        ></div>
-        
-        {/* Strings */}
-        {stringPositions.map((yPos, stringIndex) => (
-          <div
-            key={`string-${stringIndex}`}
-            className="fretboard-string"
-            style={{ 
-              top: `${yPos}px`, 
-              left: '40px',
-              height: stringIndex === 0 || stringIndex === strings.length - 1 ? '1px' : '2px',
-              opacity: 1 - stringIndex * 0.1
-            }}
-          ></div>
-        ))}
-        
-        {/* Frets */}
-        {fretPositions.map((xPos, fretIndex) => (
-          <div
-            key={`fret-${fretIndex}`}
-            className="fretboard-fret"
-            style={{ 
-              left: `${xPos + 40}px`,
-              display: fretIndex === 0 ? 'none' : 'block'
-            }}
-          ></div>
-        ))}
-        
-        {/* Fret markers (inlays) */}
-        {markerPositions.map(fret => (
-          <div
-            key={`marker-${fret}`}
-            className="absolute bg-gray-700 rounded-full"
-            style={{
-              width: fret === 12 ? '24px' : '12px',
-              height: fret === 12 ? '24px' : '12px',
-              left: `${40 + fretSpacing * fret - fretSpacing / 2}px`,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-          >
-            {fret === 12 && (
-              <div className="absolute bg-gray-700 rounded-full" style={{width: '12px', height: '12px', top: '-20px'}}></div>
-            )}
-          </div>
-        ))}
-        
-        {/* String labels */}
-        {strings.map((note, stringIndex) => (
-          <div
-            key={`label-${stringIndex}`}
-            className="absolute font-mono text-xs text-gray-400"
-            style={{
-              left: '15px',
-              top: `${stringIndex * stringSpacing - 8}px`,
-            }}
-          >
-            {note}
-          </div>
-        ))}
-        
-        {/* Fret numbers */}
-        {Array.from({ length: fretCount }, (_, i) => i + 1).map(fretNum => (
-          <div
-            key={`fretnum-${fretNum}`}
-            className="absolute font-mono text-xs text-gray-500"
-            style={{
-              left: `${40 + fretSpacing * fretNum - fretSpacing / 2}px`,
-              top: `${fretboardHeight + 8}px`,
-              transform: 'translateX(-50%)'
-            }}
-          >
-            {fretNum}
-          </div>
-        ))}
-        
-        {/* Note markers */}
-        {stringPositions.map((yPos, stringIndex) => (
-          Array.from({ length: fretCount + 1 }, (_, fretIndex) => {
-            const note = getNoteAtPosition(stringIndex, fretIndex);
-            if (!note) return null;
-            
-            const xPos = fretIndex === 0 
-              ? 30 // Open string position
-              : 40 + fretSpacing * fretIndex - fretSpacing / 2; // Fretted position
-            
-            return (
-              <div
-                key={`note-${stringIndex}-${fretIndex}`}
-                className={`fretboard-dot ${getMarkerColor(note)} text-black`}
-                style={{
-                  left: `${xPos}px`,
-                  top: `${yPos - 12}px`,
-                }}
-                onClick={() => handleClick(stringIndex, fretIndex)}
-                onMouseEnter={() => setHoveredPosition({ string: stringIndex, fret: fretIndex })}
-                onMouseLeave={() => setHoveredPosition(null)}
+  // Create fretboard
+  const renderFretboard = () => {
+    return (
+      <div className="fretboard w-full overflow-x-auto">
+        <div className="inline-block min-w-full">
+          <div className="grid grid-cols-16" style={{ gridTemplateColumns: `30px repeat(${maxFrets}, 1fr)` }}>
+            {/* Fret numbers */}
+            <div className="text-center"></div>
+            {Array.from({ length: maxFrets }).map((_, i) => (
+              <div 
+                key={`fret-${i}`} 
+                className={`text-center text-xs text-gray-400 ${i === 0 ? 'font-bold' : ''}`}
               >
-                {note.finger && <span>{note.finger}</span>}
+                {i}
               </div>
-            );
-          })
-        ))}
+            ))}
+            
+            {/* Strings and frets */}
+            {Array.from({ length: numStrings }).map((_, stringIndex) => (
+              <React.Fragment key={`string-${stringIndex}`}>
+                {/* String label */}
+                <div className="text-center text-xs text-gray-400 py-2">
+                  {showLabels && openStringNotes[stringIndex]}
+                </div>
+                
+                {/* Frets for this string */}
+                {Array.from({ length: maxFrets }).map((_, fretIndex) => {
+                  // Find if there's a scale note at this position
+                  const note = displayNotes.find(
+                    note => note.string === (stringIndex + 1) && note.fret === fretIndex
+                  );
+                  
+                  return (
+                    <div 
+                      key={`string-${stringIndex}-fret-${fretIndex}`}
+                      className={`
+                        relative py-2 border-b border-gray-600
+                        ${fretIndex === 0 ? 'border-r-2 border-r-gray-300' : 'border-r border-r-gray-600'}
+                        ${[3, 5, 7, 9, 12, 15, 17, 19, 21, 24].includes(fretIndex) ? 'bg-gray-700' : ''}
+                      `}
+                    >
+                      {note && (
+                        <div 
+                          className={`
+                            absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                            w-5 h-5 rounded-full flex items-center justify-center
+                            ${note.noteColor || 
+                              (note.isRoot || note.noteFunction === 'R' 
+                                ? 'bg-sensei-accent text-white' 
+                                : note.isChordTone
+                                  ? 'bg-orange-400 text-white'
+                                  : note.isScaleNote
+                                    ? 'bg-green-400 text-white'
+                                    : 'bg-gray-600 text-white')}
+                          `}
+                        >
+                          <span className="text-xs">
+                            {note.noteFunction || ''}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
       </div>
+    );
+  };
+  
+  return (
+    <div className="guitar-fretboard-scale-display bg-gray-800 p-4 rounded-md">
+      <h3 className="text-sm font-medium text-gray-400 mb-2">
+        {recommendedChord && `코드: ${recommendedChord} / `}
+        스케일: {displayScaleName}
+      </h3>
+      {renderFretboard()}
     </div>
   );
 };
