@@ -10,11 +10,13 @@ export interface ChordFret {
 interface GuitarChordDiagramProps {
   chordName: string;
   positions: ChordFret[];
+  compact?: boolean; // Add compact mode option
 }
 
 const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({ 
   chordName, 
-  positions 
+  positions,
+  compact = false
 }) => {
   const strings = 6;
   const frets = 5;  // Show 5 frets in the diagram
@@ -26,13 +28,24 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
     positions.length > 0 ? 
       Math.max(...positions.map(p => p.fret)) : startFret + frets - 1);
   
+  // Adjust dimensions for compact mode
+  const width = compact ? 50 : 80;
+  const height = compact ? 60 : 100;
+  const fretSpacing = compact ? 12 : 20;
+  const stringSpacing = compact ? 10 : 16;
+  const dotSize = compact ? 8 : 12;
+  
   return (
-    <div className="guitar-chord-diagram flex flex-col items-center">
-      <div className="text-lg font-bold mb-4">{chordName}</div>
-      <div className="relative" style={{ width: '80px', height: '100px', marginTop: '20px' }}>
+    <div className={`guitar-chord-diagram flex flex-col items-center ${compact ? 'scale-90' : ''}`}>
+      {!compact && <div className="text-lg font-bold mb-4">{chordName}</div>}
+      <div className="relative" style={{ 
+        width: `${width}px`, 
+        height: `${height}px`, 
+        marginTop: compact ? '10px' : '20px' 
+      }}>
         {/* Chord position indicator (if starting above 1st fret) */}
         {startFret > 1 && (
-          <div className="absolute text-xs text-gray-400 left-[-20px] top-[10px]">
+          <div className={`absolute text-xs text-gray-400 left-[-${compact ? 15 : 20}px] top-[10px]`}>
             {startFret}
           </div>
         )}
@@ -42,7 +55,7 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
           <div 
             key={`fret-${i}`}
             className={`absolute w-full h-[1px] bg-gray-400`}
-            style={{ top: `${20 * i}px` }}
+            style={{ top: `${fretSpacing * i}px` }}
           ></div>
         ))}
         
@@ -50,14 +63,17 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
         {Array.from({ length: strings }, (_, i) => (
           <div 
             key={`string-${i}`}
-            className="absolute h-[80px] w-[1px] bg-gray-400"
-            style={{ left: `${16 * i}px`, top: '0px' }}
+            className="absolute w-[1px] bg-gray-400"
+            style={{ 
+              left: `${stringSpacing * i}px`, 
+              top: '0px',
+              height: `${height - 20}px`
+            }}
           ></div>
         ))}
         
         {/* String status at nut (open, muted) */}
         {Array.from({ length: strings }, (_, i) => {
-          // 문자열 번호를 반전시킴 (6부터 1까지)
           const stringNum = strings - i;
           const pos = positions.find(p => p.string === stringNum);
           
@@ -73,21 +89,23 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
               key={`nut-${i}`}
               className="absolute flex items-center justify-center text-sm"
               style={{ 
-                left: `${16 * i - 6}px`, 
-                top: '-20px',
-                width: '12px',
-                height: '12px'
+                left: `${stringSpacing * i - (compact ? 4 : 6)}px`, 
+                top: '-15px',
+                width: compact ? '8px' : '12px',
+                height: compact ? '8px' : '12px'
               }}
             >
-              {isMuted && <span className="text-gray-400">✕</span>}
-              {isOpen && <div className="w-4 h-4 rounded-full border-2 border-gray-400"></div>}
+              {isMuted && <span className={`text-gray-400 ${compact ? 'text-xs' : 'text-sm'}`}>✕</span>}
+              {isOpen && <div className={`rounded-full border-2 border-gray-400`} style={{
+                width: compact ? '8px' : '16px',
+                height: compact ? '8px' : '16px'
+              }}></div>}
             </div>
           );
         })}
         
         {/* Finger positions */}
         {positions.filter(p => p.fret > 0).map((pos, i) => {
-          // 문자열 인덱스를 반전시켜 좌우 방향을 올바르게 표시
           const stringIdx = strings - pos.string;
           const relFret = pos.fret - startFret;
           
@@ -97,11 +115,13 @@ const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
           return (
             <div 
               key={`dot-${i}`}
-              className={`absolute flex items-center justify-center w-4 h-4 rounded-full 
-                ${pos.isRoot ? 'bg-sensei-accent' : 'bg-gray-300'} text-xs font-medium text-black`}
+              className={`absolute flex items-center justify-center rounded-full 
+                ${pos.isRoot ? 'bg-sensei-accent' : 'bg-gray-300'} ${compact ? 'text-[8px]' : 'text-xs'} font-medium text-black`}
               style={{ 
-                left: `${16 * stringIdx - 8}px`, 
-                top: `${20 * relFret - 10}px`,
+                width: compact ? '10px' : '16px',
+                height: compact ? '10px' : '16px',
+                left: `${stringSpacing * stringIdx - (compact ? 5 : 8)}px`, 
+                top: `${fretSpacing * relFret - (compact ? 5 : 10)}px`,
               }}
             >
               {pos.finger && pos.finger}

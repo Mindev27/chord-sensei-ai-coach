@@ -1,10 +1,130 @@
-
 import { useState } from "react";
 import ChordTile, { ChordToneInfo } from "./ChordTile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import GuitarChordDiagram, { ChordFret } from "./GuitarChordDiagram";
+import { getChordPositions } from "@/lib/chordPositions";
+
+// 난이도별 코드 포지션 정의
+const simplifiedChords: Record<string, ChordFret[]> = {
+  // 간소화된 코드들 (난이도: 하)
+  "C": [
+    { string: 3, fret: 0 },
+    { string: 2, fret: 1, finger: 1 },
+    { string: 1, fret: 0 }
+  ],
+  "G": [
+    { string: 6, fret: 3, finger: 3, isRoot: true },
+    { string: 5, fret: 2, finger: 2 },
+    { string: 1, fret: 3, finger: 4 }
+  ],
+  "Am": [
+    { string: 5, fret: 0, isRoot: true },
+    { string: 3, fret: 2, finger: 2 },
+    { string: 2, fret: 1, finger: 1 }
+  ],
+  "E7": [
+    { string: 6, fret: 0, isRoot: true },
+    { string: 4, fret: 0 },
+    { string: 3, fret: 1, finger: 1 }
+  ],
+  "F": [
+    { string: 4, fret: 3, finger: 3 },
+    { string: 3, fret: 2, finger: 2 },
+    { string: 2, fret: 1, finger: 1 },
+    { string: 1, fret: 1, finger: 1 }
+  ],
+  "Fm": [
+    { string: 4, fret: 3, finger: 3 },
+    { string: 3, fret: 1, finger: 1 },
+    { string: 2, fret: 1, finger: 1 },
+    { string: 1, fret: 1, finger: 1 }
+  ],
+  "G♯dim": [
+    { string: 4, fret: 4, finger: 4 },
+    { string: 3, fret: 2, finger: 2 },
+    { string: 2, fret: 3, finger: 3 },
+    { string: 1, fret: 2, finger: 1 }
+  ]
+};
+
+const advancedChords: Record<string, ChordFret[]> = {
+  // 고급 코드들 (난이도: 상)
+  "C": [
+    { string: 6, fret: 8, finger: 1, isRoot: true },  // 바레 코드 폼
+    { string: 5, fret: 10, finger: 3 },
+    { string: 4, fret: 10, finger: 4 },
+    { string: 3, fret: 9, finger: 2 },
+    { string: 2, fret: 8, finger: 1 },
+    { string: 1, fret: 8, finger: 1 }
+  ],
+  "G": [
+    { string: 6, fret: 3, finger: 3, isRoot: true },
+    { string: 5, fret: 2, finger: 2 },
+    { string: 4, fret: 0 },
+    { string: 3, fret: 0 },
+    { string: 2, fret: 3, finger: 4 },
+    { string: 1, fret: 3, finger: 4 }
+  ],
+  "Am": [
+    { string: 6, fret: 5, finger: 1, isRoot: true },  // 바레 코드 폼
+    { string: 5, fret: 7, finger: 3 },
+    { string: 4, fret: 7, finger: 4 },
+    { string: 3, fret: 5, finger: 1 },
+    { string: 2, fret: 5, finger: 1 },
+    { string: 1, fret: 5, finger: 1 }
+  ],
+  "E7": [
+    { string: 6, fret: 0, isRoot: true },
+    { string: 5, fret: 2, finger: 2 },
+    { string: 4, fret: 0 },
+    { string: 3, fret: 1, finger: 1 },
+    { string: 2, fret: 3, finger: 3 },  // 확장된 보이싱
+    { string: 1, fret: 0 }
+  ],
+  "F": [
+    { string: 6, fret: 1, finger: 1, isRoot: true }, // 바레 코드 폼 
+    { string: 5, fret: 3, finger: 3 },
+    { string: 4, fret: 3, finger: 4 },
+    { string: 3, fret: 2, finger: 2 },
+    { string: 2, fret: 1, finger: 1 },
+    { string: 1, fret: 1, finger: 1 }
+  ],
+  "Fm": [
+    { string: 6, fret: 1, finger: 1, isRoot: true }, // 바레 코드 폼
+    { string: 5, fret: 3, finger: 3 },
+    { string: 4, fret: 3, finger: 4 },
+    { string: 3, fret: 1, finger: 1 },
+    { string: 2, fret: 1, finger: 1 },
+    { string: 1, fret: 1, finger: 1 }
+  ],
+  "G♯dim": [
+    { string: 6, fret: 4, finger: 1, isRoot: true }, // 고급 포지션
+    { string: 5, fret: 5, finger: 2 },
+    { string: 4, fret: 4, finger: 1 },
+    { string: 3, fret: 5, finger: 3 },
+    { string: 2, fret: 4, finger: 1 },
+    { string: 1, fret: 5, finger: 4 }
+  ]
+};
+
+// 난이도에 따른 코드 포지션 반환 함수
+const getChordPositionsByDifficulty = (chordName: string, difficultyLevel: "상" | "중" | "하"): ChordFret[] => {
+  // 난이도 '하': 간소화된 코드 포지션
+  if (difficultyLevel === "하" && simplifiedChords[chordName]) {
+    return simplifiedChords[chordName];
+  }
+  
+  // 난이도 '상': 고급 코드 포지션
+  if (difficultyLevel === "상" && advancedChords[chordName]) {
+    return advancedChords[chordName];
+  }
+  
+  // 난이도 '중' 또는 기본값: 기본 코드 포지션
+  return getChordPositions(chordName);
+};
 
 interface Chord {
   id: string;
@@ -15,6 +135,11 @@ interface Chord {
   section?: string;
   chordTones: ChordToneInfo;
   alternateNames: string[];
+}
+
+// 난이도 props 추가
+interface ChordGridProps {
+  difficultyLevel?: "상" | "중" | "하";
 }
 
 // Mock data for "Don't Look Back in Anger" by Oasis
@@ -218,7 +343,7 @@ const getAlternateNames = (chordName: string): string[] => {
   }
 };
 
-const ChordGrid = () => {
+const ChordGrid = ({ difficultyLevel = "중" }: ChordGridProps) => {
   const [chords, setChords] = useState<Chord[]>(generateOasisChords());
   const [selectedChord, setSelectedChord] = useState<Chord | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -263,6 +388,25 @@ const ChordGrid = () => {
   
   return (
     <div className="p-4 overflow-auto h-full">
+      {/* 현재 난이도 표시 */}
+      <div className="mb-4 flex justify-end">
+        <div className="flex items-center text-xs text-gray-400">
+          <span className="mr-2">현재 난이도:</span>
+          <span className={`px-2 py-1 rounded
+            ${difficultyLevel === "하" ? "bg-green-500/70 text-white" : 
+             difficultyLevel === "중" ? "bg-yellow-500/70 text-white" : 
+             "bg-red-500/70 text-white"}`
+          }>
+            {difficultyLevel}
+          </span>
+          <span className="ml-2">
+            {difficultyLevel === "하" ? "(간소화된 코드)" : 
+             difficultyLevel === "중" ? "(기본 코드)" : 
+             "(고급 코드)"}
+          </span>
+        </div>
+      </div>
+
       <div className="grid gap-6">
         {Object.entries(groupedChords).map(([section, sectionBars]) => (
           <div key={section} className="mb-6">
@@ -284,17 +428,27 @@ const ChordGrid = () => {
                   </div>
                   <div className="h-[1px] flex-grow bg-gray-800"></div>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-4 mb-8">
                   {barChords.sort((a, b) => a.beat - b.beat).map((chord) => (
-                    <ChordTile 
-                      key={chord.id}
-                      chord={chord.name}
-                      confidence={chord.confidence}
-                      beat={chord.beat}
-                      chordTones={chord.chordTones}
-                      alternateNames={chord.alternateNames}
-                      onClick={() => handleChordClick(chord)}
-                    />
+                    <div key={chord.id} className="flex flex-col bg-gray-800/30 p-2 rounded-lg">
+                      <ChordTile 
+                        chord={chord.name}
+                        confidence={chord.confidence}
+                        beat={chord.beat}
+                        chordTones={chord.chordTones}
+                        alternateNames={chord.alternateNames}
+                        onClick={() => handleChordClick(chord)}
+                      />
+                      <div className="mt-3 flex justify-center pb-1">
+                        <div className="w-16 h-20">
+                          <GuitarChordDiagram 
+                            chordName={chord.name}
+                            positions={getChordPositionsByDifficulty(chord.name, difficultyLevel)}
+                            compact={true}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

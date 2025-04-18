@@ -7,7 +7,8 @@ import SoloAnalysis from "@/components/SoloAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Save, Share2, Volume2, Music2, Home } from "lucide-react";
+import { Download, Save, Share2, Volume2, Music2, Home, ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock data for "Don't Look Back in Anger" C Major chord on the fretboard
 const cMajorChordNotes = [
@@ -81,6 +82,7 @@ const Workspace = () => {
   const [feedbackIndex, setFeedbackIndex] = useState(0);
   const [showSoloAnalysis, setShowSoloAnalysis] = useState(true);
   const [currentChordIndex, setCurrentChordIndex] = useState(0);
+  const [difficultyLevel, setDifficultyLevel] = useState<"상" | "중" | "하">("중");
   
   // Get previous chord from progression
   const getPreviousChord = () => {
@@ -233,8 +235,8 @@ const Workspace = () => {
           </div>
         </div>
 
-                {/* Toggle button for chord grid / solo analysis */}
-                <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
+        {/* Toggle button for chord grid / solo analysis */}
+        <div className="border-t border-gray-800 bg-gray-900 py-2 px-4 flex justify-between items-center">
           <div className="flex gap-2">
             <Button 
               variant={showSoloAnalysis ? "default" : "outline"}
@@ -256,25 +258,40 @@ const Workspace = () => {
             </Button>
           </div>
           
-          <Button
-            onClick={toggleSoloPlayback}
-            variant="default"
-            size="sm"
-            className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
-          >
-            {isPlayingSolo ? "Stop Solo" : "Play Solo"}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* 난이도 선택 드롭다운 */}
+            <Select
+              value={difficultyLevel}
+              onValueChange={(value) => setDifficultyLevel(value as "상" | "중" | "하")}
+            >
+              <SelectTrigger className="w-24 h-8 bg-gray-800 border-gray-700 text-xs">
+                <SelectValue placeholder="난이도" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-800">
+                <SelectGroup>
+                  <SelectItem value="하" className="text-green-500">난이도: 하</SelectItem>
+                  <SelectItem value="중" className="text-yellow-500">난이도: 중</SelectItem>
+                  <SelectItem value="상" className="text-red-500">난이도: 상</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            
+            <Button
+              onClick={toggleSoloPlayback}
+              variant="default"
+              size="sm"
+              className={`${isPlayingSolo ? "bg-red-600 hover:bg-red-700" : "bg-sensei-accent hover:bg-sensei-accent/90"}`}
+            >
+              {isPlayingSolo ? "Stop Solo" : "Play Solo"}
+            </Button>
+          </div>
         </div>
         
-        {/* Chord Grid Area */}
         <div className="flex-1 overflow-auto">
           {!showSoloAnalysis ? (
             <div className="flex flex-col h-full">
               <div className="flex-1 overflow-auto">
-                <ChordGrid />
-              </div>
-              <div className="h-52 border-t border-gray-800 bg-gray-900">
-                <GuitarFretboard notes={displayedNotes} />
+                <ChordGrid difficultyLevel={difficultyLevel} />
               </div>
             </div>
           ) : (
@@ -285,6 +302,7 @@ const Workspace = () => {
               playbackTime={playbackTime}
               previousChord={getPreviousChord()}
               nextChord={getNextChord()}
+              difficultyLevel={difficultyLevel}
             />
           )}
         </div>
