@@ -243,7 +243,7 @@ const Workspace = () => {
               onClick={() => setShowSoloAnalysis(true)}
             >
               <Music2 className="h-4 w-4" />
-              솔로 분석
+              즉흥 연주
             </Button>
             <Button 
               variant={!showSoloAnalysis ? "default" : "outline"}
